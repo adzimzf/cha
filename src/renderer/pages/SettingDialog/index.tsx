@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Tabs, Tab, Dialog, DialogContent, DialogActions, DialogTitle, Box } from '@mui/material'
 import { Settings, SettingWindowTab, Theme } from '../../../shared/types'
 import { useTranslation } from 'react-i18next'
@@ -25,6 +25,8 @@ interface Props {
 export default function SettingWindow(props: Props) {
     const { t } = useTranslation()
     const [settings, setSettings] = useAtom(settingsAtom)
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth)
+
 
     // 标签页控制
     const [currentTab, setCurrentTab] = React.useState<SettingWindowTab>('ai')
@@ -48,6 +50,12 @@ export default function SettingWindow(props: Props) {
         _setSettingsEdit(settings)
     }, [settings])
 
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth)
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
     const onSave = () => {
         setSettings(settingsEdit)
         props.close()
@@ -66,7 +74,7 @@ export default function SettingWindow(props: Props) {
     }
 
     return (
-        <Dialog open={props.open} onClose={onCancel} fullWidth>
+        <Dialog open={props.open} onClose={onCancel} fullWidth fullScreen={windowWidth < 500}>
             <DialogTitle>{t('settings')}</DialogTitle>
             <DialogContent>
                 <Box
