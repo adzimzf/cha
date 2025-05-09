@@ -1,0 +1,23 @@
+{
+  "version": "1.0.3",
+  "notes": "note",
+  "pub_date": "",
+  "platforms": {
+    "linux-x86_64": {
+      "signature": "",
+      "url": ""
+    },
+    "windows-x86_64": {
+      "signature": "",
+      "url": ""
+    },
+    "darwin-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRSjNIeno3Uit3TkMrdC9hMGdldUFXcDVCQ1JiQ2kyWU4xWVd3bEtoSjQwZ1U5YmpjWmNBa3VmVHNzVndnV3ZWcVBrWTY1ZCtuVWpzNzhFcUZyQ2lCQitNdXZWck4yTkFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQ2NTAwNTM0CWZpbGU6Q2hhLmFwcC50YXIuZ3oKWGZwcWVJamNmZHAxYkNTY040SmU1d0dIbmZUTGpYaTREZFpnNU5NKzBRWXJzRXljVTY4azY3UmJDZVh0MmY3ZUQrODZ6anE2V0V2VkdpTHpKMlFRRHc9PQo=",
+      "url": "https://github.com/adzimzf/cha/releases/download/v1.0.3/Cha_1.0.3_aarch64.dmg"
+    },
+    "darwin-x": {
+      "signature": "",
+      "url": ""
+    }
+  }
+}

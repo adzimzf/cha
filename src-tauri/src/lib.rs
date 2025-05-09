@@ -47,14 +47,16 @@ async fn sync_execute(synchronize: tauri::State<'_, Arc<Synchronize>>) -> Result
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    log_enabled!(Level::Info);
-    tauri::Builder::default()
-        .plugin(tauri_plugin_fs::init())
+        let mut builder = tauri::Builder::default();
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        let mut builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+
+         builder.plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
-        .setup(|app| { 
+        .setup(|app| {
             let dropbox_client_id: &'static str = env!("DROPBOX_CLIENT_ID");
             let dropbox_client_secret: &'static str = env!("DROPBOX_CLIENT_SECRET");
             // Create single instance

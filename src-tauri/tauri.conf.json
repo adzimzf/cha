@@ -20,6 +20,7 @@
     ]
   },
   "bundle": {
+    "createUpdaterArtifacts": true,
     "active": true,
     "targets": "all",
     "icon": [
@@ -42,5 +43,13 @@
       "icons/Square310x310Logo.png",
       "icons/StoreLogo.png"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM0QjAxRkVERjM3Q0RDMDkKUldRSjNIeno3Uit3TkhYdmRWZlRWSmY4VnM0VHg3SFV0TlRaT1dnSnJ4S0haaE13TjFobG9GdUMK",
+      "endpoints": [
+        "https://github.com/adzimzf/cha/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

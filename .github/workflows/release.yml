@@ -19,11 +19,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest' # for Arm based macs (M1 and above).
-            args: 'build -- --target aarch64-apple-darwin'
-            rust-target: aarch64-apple-darwin
+#          - platform: 'macos-latest' # for Arm based macs (M1 and above).
+#            args: 'build --target aarch64-apple-darwin'
+#            rust-target: aarch64-apple-darwin
           - platform: 'macos-13' # for Intel based macs.
-            args: 'build -- --target x86_64-apple-darwin'
+            args: 'build --target x86_64-apple-darwin'
             rust-target: x86_64-apple-darwin
           - platform: 'ubuntu-22.04'
             target: 'android'
@@ -34,6 +34,8 @@ jobs:
     env:
       DROPBOX_CLIENT_ID: ${{ secrets.DROPBOX_CLIENT_ID }}
       DROPBOX_CLIENT_SECRET: ${{ secrets.DROPBOX_CLIENT_SECRET }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
       
     steps:
       - uses: actions/checkout@v4
@@ -62,10 +64,6 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.rust-target }}
-      - name: check machine issue
-        run: |
-          uname -m
-          rustup show
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
@@ -121,17 +119,28 @@ jobs:
         run: |
           npm run tauri ${{matrix.args}}
 
+      - name: Rename Bundle MacOS
+        if: matrix.platform == 'macos-13' || matrix.platform == 'macos-latest'
+        run: |
+          `#rename the updater bundle`
+          mv "./src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Cha.app.tar.gz" "./src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Cha.app-aarch64-darwin.tar.gz" && echo "File renamed successfully." || echo "File '$old_filename' not found. No action taken."
+          mv "./src-tauri/target/x64-apple-darwin/release/bundle/macos/Cha.app.tar.gz" "./src-tauri/target/x64-apple-darwin/release/bundle/macos/Cha_${{steps.package-version.outputs.version}}_x64-darwin.tar.gz" && echo "File renamed successfully." || echo "File '$old_filename' not found. No action taken."
+          
+          `#rename the updater signature` 
+          mv "./src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Cha.app.tar.gz.sig" "./src-tauri/target/aarch64-apple-darwin/release/bundle/macos/aarch64-darwin.sig" && echo "File renamed successfully." || echo "File '$old_filename' not found. No action taken."
+          mv "./src-tauri/target/x64-apple-darwin/release/bundle/macos/Cha.app.tar.gz.sig" "./src-tauri/target/x64-apple-darwin/release/bundle/macos/Cha_${{steps.package-version.outputs.version}}_x64-darwin.sig" && echo "File renamed successfully." || echo "File '$old_filename' not found. No action taken."
+
       - name: Rename Bundle
         if: matrix.target == 'android'
         run: |
           mkdir ./release-assets
           mv ./src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk ./release-assets/Cha_${{steps.package-version.outputs.version}}.apk
 
-      - name: Delay to prevent conflict  creating release
-        if: matrix.platform != 'macos-latest'
-        run: |
-          echo "delay 60 seconds to wait macos latest to create release"
-          sleep 30
+#      - name: Delay to prevent conflict  creating release
+#        if: matrix.platform != 'macos-latest'
+#        run: |
+#          echo "delay 60 seconds to wait macos latest to create release"
+#          sleep 30
 
       - name: Publish
         uses: softprops/action-gh-release@v1
@@ -143,3 +152,5 @@ jobs:
           files: |
             ./release-assets/* 
             ./src-tauri/target/*/release/bundle/dmg/*.dmg
+            ./src-tauri/target/*/release/bundle/macos/*.tar.gz
+            ./src-tauri/target/*/release/bundle/macos/*.sig

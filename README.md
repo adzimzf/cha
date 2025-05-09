@@ -5,14 +5,14 @@
 A full opensource version of Chatbox Community Edition for Desktop and Mobile power by Tauri. 
 This repository is fork from https://github.com/Bin-Huang/chatbox.
 
-### Download for Desktop
+### Download for Desktop and Mobile
 
 <table style="width: 100%">
   <tr>
     <td width="25%" align="center">
       <b>Windows</b>
     </td>
-    <td width="25%" align="center" colspan="2">
+    <td width="25%" align="center">
       <b>MacOS</b>
     </td>
     <td width="25%" align="center">
@@ -31,17 +31,10 @@ This repository is fork from https://github.com/Bin-Huang/chatbox.
       </a>
     </td>
     <td align="center" valign="middle">
-      <a href='https://github.com/adzimzf/cha/releases/download/v1.0.3/Cha_1.0.3_aarch64.dmg'>
-        <img src='./doc/statics/mac.png' style="height:24px; width: 24px" />
-        <br />
-        <b>M1/M2</b>
-      </a>
-    </td>
-    <td align="center" valign="middle">
       <a href='https://github.com/adzimzf/cha/releases/download/v1.0.3/Cha_1.0.3_x64.dmg'>
         <img src='./doc/statics/mac.png' style="height:24px; width: 24px" />
         <br />
-        <b>Intel</b> 
+        <b>DMG</b> 
       </a>
     </td>
     <td align="center" valign="middle">

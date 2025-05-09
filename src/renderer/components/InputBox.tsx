@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Typography, useTheme } from '@mui/material'
+import { Typography, useTheme, Button } from '@mui/material'
 import { SessionType, createMessage } from '../../shared/types'
 import platform from '../packages/platform'
 import { useTranslation } from 'react-i18next'
@@ -30,6 +30,7 @@ export default function InputBox(props: Props) {
     const { t } = useTranslation()
     const [messageInput, setMessageInput] = useState('')
     const [isMobile, setIsMobile] = useState(false)
+    const [buttonUpdateText, setButtonUpdateText] = useState('New Version Available')
 
     // Get current session state
     const session = sessionActions.getSession(props.currentSessionId)
@@ -136,6 +137,16 @@ export default function InputBox(props: Props) {
                 </div>
                 <div className='flex flex-row flex-nowrap justify-between py-1'>
                     <div className='flex flex-row items-center'>
+                        <Button
+                            onFocus={()=>{
+                                setButtonUpdateText('Download & Restart')
+                            }}
+                            onBlur={()=>{
+                                setButtonUpdateText('New Version Available')
+                            }}
+                        >
+                            <Typography>{buttonUpdateText}</Typography>
+                        </Button>
                         <MiniButton className='mr-2 hover:bg-transparent' style={{ color: theme.palette.text.primary }}
                             onClick={() => {
                                 setEasterEgg(true)
