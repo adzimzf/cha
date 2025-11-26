@@ -244,6 +244,8 @@ export default function Message(props: Props) {
                                             backgroundColor: theme.palette.background.paper,
                                             color: theme.palette.text.primary,
                                             lineHeight: 1.7,
+                                            overflowX: 'hidden',
+                                            wordBreak: 'break-word',
                                         }}
                                     >
                                         {showLoadingIcon && <LoadingSpinner speed={0.5} size={'15px'} />}
@@ -315,6 +317,8 @@ export default function Message(props: Props) {
                                             backgroundColor: theme.palette.background.paper,
                                             color: theme.palette.text.primary,
                                             lineHeight: 1.7,
+                                            overflowX: 'hidden',
+                                            wordBreak: 'break-word',
                                         }}
                                     >
                                         {showLoadingIcon && <LoadingSpinner speed={0.5} size={'15px'} />}

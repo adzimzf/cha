@@ -63,7 +63,7 @@ export default function MessageList(props: Props) {
     )
 
     return (
-        <div className='overflow-y-auto w-full h-full pr-0 pl-0' >
+        <div className='overflow-y-auto w-full h-full pr-0 pl-0'>
             <Virtuoso
                 ref={ref}
                 data={visibleList}

@@ -1,9 +1,13 @@
 .msg-block {
     -webkit-user-select: text;
     user-select: text;
+    overflow-x: hidden;
 
     .msg-content {
         line-height: 1.7;
+        overflow-x: hidden;
+        word-break: break-word;
+        overflow-wrap: anywhere;
     }
     .msg-content p {
         margin: 0.7rem 0 0.6rem 0;
@@ -24,6 +28,16 @@
         width: 100%;
         max-width: 40rem;
     }
+}
+
+.msg-block table {
+    width: 100%;
+    table-layout: fixed;
+}
+.msg-block table th,
+.msg-block table td {
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 /* // markdown table */
