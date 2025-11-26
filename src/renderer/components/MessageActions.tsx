@@ -28,6 +28,9 @@ import { copyToClipboard } from '@/packages/navigator'
 import * as toastActions from '@/stores/toastActions'
 import { useTranslation } from 'react-i18next'
 import * as sessionActions from '@/stores/sessionActions'
+import { useSetAtom } from 'jotai'
+import { editingMessageAtom, editingLockIndexAtom } from '@/stores/atoms'
+import * as scrollActions from '@/stores/scrollActions'
 
 export interface Props {
     msg: Message
@@ -46,6 +49,8 @@ export default function MessageActions(props: Props) {
     const [numChild, setNumChild] = React.useState(0)
     const [currentChild, setCurrentChild] = React.useState(0)
     const [showMessageInfo, setShowMessageInfo] = React.useState(false)
+    const setEditingMessage = useSetAtom(editingMessageAtom)
+    const setEditingLockIndex = useSetAtom(editingLockIndexAtom)
 
     useMemo(()=>{
         if (msg.branches && msg.branches.length > 0){
@@ -182,7 +187,15 @@ export default function MessageActions(props: Props) {
                     }}
                     arrow
                 >
-                    <IconButton size="small" color="inherit" onClick={()=> setEditMessage(true)}
+                    <IconButton size="small" color="inherit" onClick={()=> {
+                        const session = sessionActions.getSession(sessionId)
+                        if (session) {
+                            const idx = session.messages.findIndex(m => m.id === msg.id)
+                            const lockIndex = Math.max(0, idx - 1)
+                            setEditingLockIndex(lockIndex)
+                        }
+                        setEditingMessage({ sessionId, messageId: msg.id, content: msg.content })
+                    }}
                         sx={{ '&:hover': { backgroundColor: theme.palette.action.hover } }}
                     >
                         <Edit fontSize={'inherit'} />

@@ -1,14 +1,21 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso'
 import Message from './Message'
 import * as atoms from '../stores/atoms'
-import { useAtom, useAtomValue } from 'jotai'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 
 interface Props { }
 
 export default function MessageList(props: Props) {
     const currentSession = useAtomValue(atoms.currentSessionAtom)
     const currentMessageList = useAtomValue(atoms.currentMessageListAtom)
+    const editingLockIndex = useAtomValue(atoms.editingLockIndexAtom)
+    const editingMessage = useAtomValue(atoms.editingMessageAtom)
+    const setEditingLockIndex = useSetAtom(atoms.editingLockIndexAtom)
+    const visibleList = useMemo(() => {
+        if (editingLockIndex === null) return currentMessageList
+        return currentMessageList.slice(0, Math.max(0, editingLockIndex + 1))
+    }, [currentMessageList, editingLockIndex])
     const ref = useRef<VirtuosoHandle>(null);
     const [, setMessageListRef] = useAtom(atoms.messageListRefAtom)
     const [, setShowScrollToBottom] = useAtom(atoms.showScrollToBottom)
@@ -17,6 +24,22 @@ export default function MessageList(props: Props) {
     useEffect(() => {
         setMessageListRef(ref)
     }, [ref])
+
+    useEffect(() => {
+        if (!ref.current) return
+        // when locking, ensure we are positioned at the end of the visible list
+        if (editingLockIndex !== null) {
+            ref.current.scrollToIndex({ index: 'LAST', align: 'end', behavior: 'auto' })
+        }
+    }, [editingLockIndex])
+
+    useEffect(() => {
+        if (editingLockIndex === null) return
+        const anyGenerating = currentMessageList.some((m) => m.generating)
+        if (!anyGenerating && !editingMessage) {
+            setEditingLockIndex(null)
+        }
+    }, [currentMessageList, editingLockIndex, editingMessage])
 
     const ScrollSeekPlaceholder =  ({ height, index, context: { randomHeights }}) => (
         <div
@@ -41,8 +64,7 @@ export default function MessageList(props: Props) {
         <div className='overflow-y-auto w-full h-full pr-0 pl-0' >
             <Virtuoso
                 ref={ref}
-                data={currentMessageList}
-                totalCount={currentMessageList.length}
+                data={visibleList}
                 atBottomStateChange={(atBottom: boolean) => {
                     setAtBottom(atBottom)
                     if (atBottom) {
@@ -84,9 +106,7 @@ export default function MessageList(props: Props) {
                         <div style={{height:'15px'}} />
                     </>
                 )}
-                initialTopMostItemIndex={currentMessageList.length-1}
-                // alignToBottom={true}
-                followOutput="auto"
+                followOutput={editingLockIndex !== null ? 'none' : 'auto'}
                 components={{ ScrollSeekPlaceholder }}
             />
         </div>

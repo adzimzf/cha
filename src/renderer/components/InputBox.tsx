@@ -4,19 +4,22 @@ import { SessionType, createMessage } from '../../shared/types'
 import platform from '../packages/platform'
 import { useTranslation } from 'react-i18next'
 import * as atoms from '../stores/atoms'
-import { useSetAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import * as sessionActions from '../stores/sessionActions'
 import {
     Settings2
 } from 'lucide-react'
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import EditIcon from '@mui/icons-material/Edit';
 import StopCircleRoundedIcon from '@mui/icons-material/StopCircleRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { cn } from '@/lib/utils'
 import TextareaAutosize from 'react-textarea-autosize';
 import { trackingEvent } from '@/packages/event'
 import MiniButton from './MiniButton'
 import _ from 'lodash'
 import * as scrollActions from '@/stores/scrollActions'
+import { editingMessageAtom, editingLockIndexAtom } from '@/stores/atoms'
 
 export interface Props {
     currentSessionId: string
@@ -29,6 +32,8 @@ export default function InputBox(props: Props) {
     const { t } = useTranslation()
     const [messageInput, setMessageInput] = useState('')
     const [isMobile, setIsMobile] = useState(false)
+    const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
+    const [, setEditingLockIndex] = useAtom(editingLockIndexAtom)
 
     // Get current session state
     const session = sessionActions.getSession(props.currentSessionId)
@@ -50,6 +55,23 @@ export default function InputBox(props: Props) {
         trackingEvent('send_message', { event_category: 'user' })
     }
 
+    const handleSubmitEditing = () => {
+        if (!editingMessage) return
+        if (messageInput.trim() === '') {
+            return
+        }
+        const newMessage = createMessage('user', messageInput)
+        setEditingMessage(null)
+        setMessageInput('')
+        setEditingLockIndex(null)
+        scrollActions.scrollToBottom()
+        void sessionActions.editMessage({
+            msgId: editingMessage.messageId,
+            newMessage,
+            sessionId: props.currentSessionId,
+        })
+    }
+
     const handleCancelRequest = () => {
         let session = sessionActions.getSession(props.currentSessionId)
         const generatingMsg = session?.messages?.find(m => m.generating);
@@ -66,10 +88,30 @@ export default function InputBox(props: Props) {
         platform.isMobile().then(setIsMobile)
     }, [])
 
+    useEffect(() => {
+        if (editingMessage) {
+            setMessageInput(editingMessage.content || '')
+        }
+    }, [editingMessage])
+
+    useEffect(() => {
+        // unlock scrolling when not editing and not generating
+        if (!editingMessage && !isGenerating) {
+            setEditingLockIndex(null)
+        }
+    }, [editingMessage, isGenerating])
+
     const  onKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         // on iOS and Android enter will behave as newline instead.
         if (event.key === 'Enter' && isMobile) {
            return
+        }
+
+        if (event.key === 'Escape' && editingMessage) {
+            setEditingMessage(null)
+            setMessageInput('')
+            setEditingLockIndex(null)
+            return
         }
 
         if (
@@ -80,12 +122,20 @@ export default function InputBox(props: Props) {
             !event.metaKey
         ) {
             event.preventDefault()
-            handleSubmit()
+            if (editingMessage) {
+                handleSubmitEditing()
+            } else {
+                handleSubmit()
+            }
             return
         }
         if (event.keyCode === 13 && event.ctrlKey) {
             event.preventDefault()
-            handleSubmit(false)
+            if (editingMessage) {
+                handleSubmitEditing()
+            } else {
+                handleSubmit(false)
+            }
             return
         }
     }
@@ -122,6 +172,7 @@ export default function InputBox(props: Props) {
                             <Settings2 size='22' strokeWidth={1} />
                         </MiniButton>
 
+
                         <TextareaAutosize
                             className={cn(
                                 'flex-1 overflow-y-auto resize-none border-none outline-none',
@@ -154,18 +205,46 @@ export default function InputBox(props: Props) {
                                 <Typography variant="caption">
                                     {isGenerating
                                         ? t('Stop generating')
-                                        : t('[Enter] send, [Shift+Enter] line break, [Ctrl+Enter] send without generating')}
+                                        : editingMessage
+                                            ? t('Edit')
+                                            : t('[Enter] send, [Shift+Enter] line break, [Ctrl+Enter] send without generating')}
                                 </Typography>
                             }
                             tooltipPlacement='top'
-                            onClick={isGenerating ? handleCancelRequest : () => handleSubmit()}
+                            onClick={isGenerating ? handleCancelRequest : () => (editingMessage ? handleSubmitEditing() : handleSubmit())}
                         >
                             {isGenerating ? (
                                 <StopCircleRoundedIcon/>
+                            ) : editingMessage ? (
+                                <EditIcon/>
                             ) : (
                                 <SendRoundedIcon/>
                             )}
                         </MiniButton>
+
+                        {editingMessage && (
+                            <MiniButton
+                                className='w-8 hover:bg-gray-100 dark:hover:bg-gray-800'
+                                style={{
+                                    color: theme.palette.error.main,
+                                    backgroundColor: 'transparent',
+                                    margin: '0 auto',
+                                }}
+                                tooltipTitle={
+                                    <Typography variant="caption">
+                                        {t('Cancel')}
+                                    </Typography>
+                                }
+                                tooltipPlacement='top'
+                                onClick={() => {
+                                    setEditingMessage(null)
+                                    setMessageInput('')
+                                    setEditingLockIndex(null)
+                                }}
+                            >
+                                <CloseRoundedIcon/>
+                            </MiniButton>
+                        )}
                     </div>
         </div>
         </div>

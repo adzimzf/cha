@@ -143,3 +143,13 @@ export const synchronizeShowLoading = atom<boolean>(false)
 export const synchronizeErrorMessage = atom<string>('')
 export const atBottomAtom = atom<boolean>(false)
 
+// editing state
+export const editingMessageAtom = atom<{
+    sessionId: string
+    messageId: string
+    content: string
+} | null>(null)
+
+// when editing, lock the list to a specific last index (inclusive)
+export const editingLockIndexAtom = atom<number | null>(null)
+
