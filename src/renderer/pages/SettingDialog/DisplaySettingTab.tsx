@@ -32,6 +32,12 @@ export default function DisplaySettingTab(props: {
                 options={[10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map((size) => ({ value: size, label: size }))}
             />
             <SimpleSelect
+                label={t('UI Scale')}
+                value={settingsEdit.uiScale}
+                onChange={(uiScale) => setSettingsEdit({ ...settingsEdit, uiScale: uiScale })}
+                options={[0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8].map((scale) => ({ value: scale, label: Math.round(scale * 100) }))}
+            />
+            <SimpleSelect
                 label={t('theme')}
                 value={settingsEdit.theme}
                 onChange={(theme) => changeModeWithPreview(theme)}

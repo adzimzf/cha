@@ -59,6 +59,7 @@ export function settings(): Settings {
         theme: Theme.DarkMode,
         language: 'en',
         fontSize: 12,
+        uiScale: 1,
         spellCheck: true,
 
         defaultPrompt: getDefaultPrompt(),

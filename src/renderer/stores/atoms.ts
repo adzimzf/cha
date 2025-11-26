@@ -32,6 +32,7 @@ export const showModelNameAtom = focusAtom(settingsAtom, (optic) => optic.prop('
 export const showMessageTimestampAtom = focusAtom(settingsAtom, (optic) => optic.prop('showMessageTimestamp'))
 export const themeAtom = focusAtom(settingsAtom, (optic) => optic.prop('theme'))
 export const fontSizeAtom = focusAtom(settingsAtom, (optic) => optic.prop('fontSize'))
+export const uiScaleAtom = focusAtom(settingsAtom, (optic) => optic.prop('uiScale'))
 export const spellCheckAtom = focusAtom(settingsAtom, (optic) => optic.prop('spellCheck'))
 export const allowReportingAndTrackingAtom = focusAtom(settingsAtom, (optic) => optic.prop('allowReportingAndTracking'))
 export const enableMarkdownRenderingAtom = focusAtom(settingsAtom, (optic) => optic.prop('enableMarkdownRendering'))
@@ -140,4 +141,5 @@ export const chatConfigDialogAtom = atom<Session | null>(null)
 export const showScrollToBottom = atom<boolean>(false)
 export const synchronizeShowLoading = atom<boolean>(false)
 export const synchronizeErrorMessage = atom<string>('')
+export const atBottomAtom = atom<boolean>(false)
 

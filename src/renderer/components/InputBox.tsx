@@ -12,7 +12,6 @@ import {
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import StopCircleRoundedIcon from '@mui/icons-material/StopCircleRounded';
 import { cn } from '@/lib/utils'
-import icon from '../static/icon.png'
 import TextareaAutosize from 'react-textarea-autosize';
 import { trackingEvent } from '@/packages/event'
 import MiniButton from './MiniButton'
@@ -96,54 +95,21 @@ export default function InputBox(props: Props) {
         scrollActions.scrollToBottom()
     }
 
-    const [easterEgg, setEasterEgg] = useState(false)
+    
 
     return (
-        <div className='pl-2 pr-4'
+        <div className={cn('w-full mx-auto flex flex-col')}>
+            <div className='w-full max-w-[980px] mx-auto my-3 pb-2 flex-1 min-h-0 rounded-xl'
             style={{
-                borderTopWidth: '1px',
-                borderTopStyle: 'solid',
-                borderTopColor: theme.palette.divider,
-                padding: '0 4px'
+                padding: '10px',
+                backgroundColor: theme.palette.background.paper,
+                border: '1px solid',
+                borderColor: theme.palette.divider,
+                overflow: 'hidden',
+                boxShadow: theme.palette.mode === 'dark' ? '0 1px 6px rgba(0,0,0,0.35)' : '0 1px 6px rgba(0,0,0,0.08)'
             }}
-        >
-            <div className={cn('w-full mx-auto flex flex-col')}>
-                <div className='w-full pl-1 pb-2 flex-1 min-h-0'
-                style={{
-                    padding: '0',
-                }}
-                >
-                    <TextareaAutosize
-                        className={cn(
-                            'w-full overflow-y-auto resize-none border-none outline-none',
-                            'bg-transparent p-1'
-                        )}
-                        maxRows={15}
-                        value={messageInput}
-                        onChange={onMessageInput}
-                        onKeyDown={onKeyDown}
-                        onFocus={onFocus}
-                        style={{
-                            color: theme.palette.text.primary,
-                            fontFamily: theme.typography.fontFamily,
-                            fontSize: theme.typography.body1.fontSize,
-                            lineHeight: 1.6
-                        }}
-                        placeholder={t('Type your question here...') || ''}
-                    />
-                    <div className='flex flex-row items-center'>
-                    </div>
-                </div>
-                <div className='flex flex-row flex-nowrap justify-between py-1'>
-                    <div className='flex flex-row items-center'>
-                        <MiniButton className='mr-2 hover:bg-transparent' style={{ color: theme.palette.text.primary }}
-                            onClick={() => {
-                                setEasterEgg(true)
-                                setTimeout(() => setEasterEgg(false), 1000)
-                            }}
-                        >
-                            <img className={cn('w-5 h-5', easterEgg ? 'animate-spin' : '')} src={icon} />
-                        </MiniButton>
+            >
+                    <div className='flex items-end gap-2'>
                         <MiniButton className='mr-2' style={{ color: theme.palette.text.primary }}
                             onClick={() => setChatConfigDialogSession(sessionActions.getCurrentSession())}
                             tooltipTitle={
@@ -155,10 +121,28 @@ export default function InputBox(props: Props) {
                         >
                             <Settings2 size='22' strokeWidth={1} />
                         </MiniButton>
-                    </div>
-                    <div className='flex flex-row items-center'>
+
+                        <TextareaAutosize
+                            className={cn(
+                                'flex-1 overflow-y-auto resize-none border-none outline-none',
+                                'bg-transparent p-1'
+                            )}
+                            maxRows={15}
+                            value={messageInput}
+                            onChange={onMessageInput}
+                            onKeyDown={onKeyDown}
+                            onFocus={onFocus}
+                            style={{
+                                color: theme.palette.text.primary,
+                                fontFamily: theme.typography.fontFamily,
+                                fontSize: theme.typography.body1.fontSize,
+                                lineHeight: 1.6
+                            }}
+                            placeholder={t('Type your question here...') || ''}
+                        />
+
                         <MiniButton
-                            className='w-8 ml-2 hover:bg-gray-100 dark:hover:bg-gray-800'  // Add subtle hover
+                            className='w-8 ml-2 hover:bg-gray-100 dark:hover:bg-gray-800'
                             style={{
                                 color: isGenerating
                                     ? theme.palette.error.main
@@ -183,8 +167,7 @@ export default function InputBox(props: Props) {
                             )}
                         </MiniButton>
                     </div>
-                </div>
-            </div>
+        </div>
         </div>
     )
 }

@@ -12,6 +12,8 @@ export default function MessageList(props: Props) {
     const ref = useRef<VirtuosoHandle>(null);
     const [, setMessageListRef] = useAtom(atoms.messageListRefAtom)
     const [, setShowScrollToBottom] = useAtom(atoms.showScrollToBottom)
+    const [, setAtBottom] = useAtom(atoms.atBottomAtom)
+    const showRef = useRef<boolean>(false)
     useEffect(() => {
         setMessageListRef(ref)
     }, [ref])
@@ -41,14 +43,32 @@ export default function MessageList(props: Props) {
                 ref={ref}
                 data={currentMessageList}
                 totalCount={currentMessageList.length}
+                atBottomStateChange={(atBottom: boolean) => {
+                    setAtBottom(atBottom)
+                    if (atBottom) {
+                        showRef.current = false
+                        setShowScrollToBottom(false)
+                    }
+                }}
                 onScroll={(e:any)=> {
                     if (!e.target) return;
                     const scrollHeight = e.target.scrollHeight
                     const scrollTop = e.target.scrollTop
                     const clientHeight = e.target.clientHeight
                     const distanceFromBottom = scrollHeight - (scrollTop + clientHeight)
-                    const bottomThreshold = 100;
-                    setShowScrollToBottom(distanceFromBottom >= bottomThreshold)
+                    const HIGH = 140
+                    const LOW = 20
+                    if (showRef.current) {
+                        if (distanceFromBottom <= LOW) {
+                            showRef.current = false
+                            setShowScrollToBottom(false)
+                        }
+                    } else {
+                        if (distanceFromBottom >= HIGH) {
+                            showRef.current = true
+                            setShowScrollToBottom(true)
+                        }
+                    }
                 }}
                 itemContent={(index, msg) => (
                     <>

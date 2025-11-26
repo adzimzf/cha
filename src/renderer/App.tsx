@@ -30,6 +30,7 @@ function Main() {
     const [openAboutWindow, setOpenAboutWindow] = React.useState(false)
     const [openCopilotWindow, setOpenCopilotWindow] = React.useState(false)
     const [openSidebar, setOpenSidebar] = React.useState(false)
+    const [uiScale, setUiScale] = useAtom(atoms.uiScaleAtom)
     useInactivityMonitor()
 
     const handleExecuteSync = async () => {
@@ -47,6 +48,32 @@ function Main() {
     useEffect(() => {
         handleExecuteSync().then()
     }, [])
+
+    useEffect(() => {
+        const isEditable = (el: EventTarget | null) => {
+            if (!el || !(el instanceof HTMLElement)) return false
+            const tag = el.tagName
+            if (tag === 'INPUT' || tag === 'TEXTAREA') return true
+            if (el.isContentEditable) return true
+            return false
+        }
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (!(e.ctrlKey || e.metaKey)) return
+            if (isEditable(e.target)) return
+            if (e.key === '+' || e.key === '=' ) {
+                e.preventDefault()
+                setUiScale(Math.min(1.8, parseFloat((uiScale + 0.1).toFixed(2))))
+            } else if (e.key === '-') {
+                e.preventDefault()
+                setUiScale(Math.max(0.8, parseFloat((uiScale - 0.1).toFixed(2))))
+            } else if (e.key === '0') {
+                e.preventDefault()
+                setUiScale(1)
+            }
+        }
+        window.addEventListener('keydown', onKeyDown)
+        return () => window.removeEventListener('keydown', onKeyDown)
+    }, [uiScale, setUiScale])
 
     return (
         <Box className="box-border App" spellCheck={spellCheck}>

@@ -139,12 +139,23 @@ export default function MessageActions(props: Props) {
     }
 
 
+    const pillBg = theme.palette.background.paper
     return (
         <Stack
             direction="row"
-            spacing={0}
+            spacing={0.5}
+            className="opacity-0 group-hover/message:opacity-100 transition-opacity"
             sx={{
                 justifyContent: msg.role === 'user' ? "flex-end" : "flex-start",
+                alignItems: 'center',
+                alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                marginTop: '4px',
+                borderRadius: '12px',
+                backgroundColor: pillBg,
+                padding: '2px 6px',
+                boxShadow: theme.palette.mode === 'dark' ? '0 1px 6px rgba(0,0,0,0.35)' : '0 1px 6px rgba(0,0,0,0.08)',
+                color: theme.palette.text.secondary,
+                width: 'fit-content',
             }}
         >
             {paginationCmp()}
@@ -157,7 +168,9 @@ export default function MessageActions(props: Props) {
                     }}
                     arrow
                 >
-                    <IconButton size="small" onClick={handleRegenerate}>
+                    <IconButton size="small" color="inherit" onClick={handleRegenerate}
+                        sx={{ '&:hover': { backgroundColor: theme.palette.action.hover } }}
+                    >
                         <CachedRounded fontSize={'inherit'} />
                     </IconButton>
                 </Tooltip>
@@ -169,7 +182,9 @@ export default function MessageActions(props: Props) {
                     }}
                     arrow
                 >
-                    <IconButton size="small" onClick={()=> setEditMessage(true)}>
+                    <IconButton size="small" color="inherit" onClick={()=> setEditMessage(true)}
+                        sx={{ '&:hover': { backgroundColor: theme.palette.action.hover } }}
+                    >
                         <Edit fontSize={'inherit'} />
                     </IconButton>
                 </Tooltip>
@@ -184,6 +199,8 @@ export default function MessageActions(props: Props) {
             >
                 <IconButton
                 size="small"
+                color="inherit"
+                sx={{ '&:hover': { backgroundColor: theme.palette.action.hover } }}
                 onClick={() => {
                     copyToClipboard(msg.content);
                     toastActions.add(t('copied to clipboard'));
@@ -207,6 +224,8 @@ export default function MessageActions(props: Props) {
             >
                 <IconButton 
                     size="small" 
+                    color="inherit"
+                    sx={{ '&:hover': { backgroundColor: theme.palette.action.hover } }}
                     onClick={() => setShowMessageInfo(!showMessageInfo)}
                 >
                     <InfoOutlined fontSize={'inherit'} />
@@ -220,7 +239,6 @@ interface KeyValueListProps {
     msg: Message;
 }
 const KeyValueList = ({ msg }: KeyValueListProps) => {
-    const theme = useTheme()
 
     const entries = [
         {
