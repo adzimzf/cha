@@ -12,10 +12,12 @@ export default function MessageList(props: Props) {
     const editingLockIndex = useAtomValue(atoms.editingLockIndexAtom)
     const editingMessage = useAtomValue(atoms.editingMessageAtom)
     const setEditingLockIndex = useSetAtom(atoms.editingLockIndexAtom)
+    const isEditingCurrent = !!editingMessage && editingMessage.sessionId === currentSession.id
+    const effectiveLockIndex = isEditingCurrent ? editingLockIndex : null
     const visibleList = useMemo(() => {
-        if (editingLockIndex === null) return currentMessageList
-        return currentMessageList.slice(0, Math.max(0, editingLockIndex + 1))
-    }, [currentMessageList, editingLockIndex])
+        if (effectiveLockIndex === null) return currentMessageList
+        return currentMessageList.slice(0, Math.max(0, effectiveLockIndex + 1))
+    }, [currentMessageList, effectiveLockIndex])
     const ref = useRef<VirtuosoHandle>(null);
     const [, setMessageListRef] = useAtom(atoms.messageListRefAtom)
     const [, setShowScrollToBottom] = useAtom(atoms.showScrollToBottom)
@@ -28,18 +30,18 @@ export default function MessageList(props: Props) {
     useEffect(() => {
         if (!ref.current) return
         // when locking, ensure we are positioned at the end of the visible list
-        if (editingLockIndex !== null) {
+        if (effectiveLockIndex !== null) {
             ref.current.scrollToIndex({ index: 'LAST', align: 'end', behavior: 'auto' })
         }
-    }, [editingLockIndex])
+    }, [effectiveLockIndex])
 
     useEffect(() => {
-        if (editingLockIndex === null) return
+        if (effectiveLockIndex === null) return
         const anyGenerating = currentMessageList.some((m) => m.generating)
-        if (!anyGenerating && !editingMessage) {
+        if (!anyGenerating && !isEditingCurrent) {
             setEditingLockIndex(null)
         }
-    }, [currentMessageList, editingLockIndex, editingMessage])
+    }, [currentMessageList, effectiveLockIndex, isEditingCurrent])
 
     const ScrollSeekPlaceholder =  ({ height, index, context: { randomHeights }}) => (
         <div
@@ -106,7 +108,7 @@ export default function MessageList(props: Props) {
                         <div style={{height:'15px'}} />
                     </>
                 )}
-                followOutput={editingLockIndex !== null ? 'none' : 'auto'}
+                followOutput={effectiveLockIndex !== null ? 'none' : 'auto'}
                 components={{ ScrollSeekPlaceholder }}
             />
         </div>

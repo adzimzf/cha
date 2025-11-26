@@ -158,4 +158,5 @@ export const branchSwitchAtom = atom<{
     direction: 'next' | 'prev'
     ts: number
 } | null>(null)
-
+export const sessionDraftsAtom = atom<Record<string, string>>({})
+export const editingDraftsAtom = atom<Record<string, string>>({})

@@ -34,6 +34,11 @@ export default function InputBox(props: Props) {
     const [isMobile, setIsMobile] = useState(false)
     const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
     const [, setEditingLockIndex] = useAtom(editingLockIndexAtom)
+    const [sessionDrafts, setSessionDrafts] = useAtom(atoms.sessionDraftsAtom)
+    const [editingDrafts, setEditingDrafts] = useAtom(atoms.editingDraftsAtom)
+    const lastSessionIdRef = useRef(props.currentSessionId)
+    const isEditingCurrent = !!editingMessage && editingMessage.sessionId === props.currentSessionId
+    const editingKey = editingMessage ? `${editingMessage.sessionId}:${editingMessage.messageId}` : ''
 
     // Get current session state
     const session = sessionActions.getSession(props.currentSessionId)
@@ -52,6 +57,7 @@ export default function InputBox(props: Props) {
         })
 
         setMessageInput('')
+        setSessionDrafts((prev) => ({ ...prev, [props.currentSessionId]: '' }))
         trackingEvent('send_message', { event_category: 'user' })
     }
 
@@ -61,9 +67,14 @@ export default function InputBox(props: Props) {
             return
         }
         const newMessage = createMessage('user', messageInput)
+        const key = `${editingMessage.sessionId}:${editingMessage.messageId}`
         setEditingMessage(null)
-        setMessageInput('')
         setEditingLockIndex(null)
+        setEditingDrafts((prev) => {
+            const { [key]: _removed, ...rest } = prev
+            return rest
+        })
+        setMessageInput(sessionDrafts[props.currentSessionId] || '')
         scrollActions.scrollToBottom()
         void sessionActions.editMessage({
             msgId: editingMessage.messageId,
@@ -82,6 +93,11 @@ export default function InputBox(props: Props) {
     const onMessageInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const input = event.target.value
         setMessageInput(input)
+        if (isEditingCurrent && editingMessage) {
+            setEditingDrafts((prev) => ({ ...prev, [editingKey]: input }))
+        } else {
+            setSessionDrafts((prev) => ({ ...prev, [props.currentSessionId]: input }))
+        }
     }
 
     useEffect(() => {
@@ -89,10 +105,38 @@ export default function InputBox(props: Props) {
     }, [])
 
     useEffect(() => {
-        if (editingMessage) {
-            setMessageInput(editingMessage.content || '')
+        if (editingMessage && editingMessage.sessionId === props.currentSessionId) {
+            const draft = editingDrafts[editingKey]
+            setMessageInput(draft !== undefined ? draft : (editingMessage.content || ''))
         }
-    }, [editingMessage])
+    }, [editingMessage, props.currentSessionId, editingDrafts])
+
+    useEffect(() => {
+        if (editingMessage && editingMessage.sessionId === props.currentSessionId) return
+        const draft = sessionDrafts[props.currentSessionId] || ''
+        setMessageInput(draft)
+    }, [props.currentSessionId, editingMessage])
+
+    useEffect(() => {
+        const prevId = lastSessionIdRef.current
+        if (prevId !== props.currentSessionId) {
+            if (editingMessage && editingMessage.sessionId === prevId) {
+                const prevKey = `${editingMessage.sessionId}:${editingMessage.messageId}`
+                setEditingDrafts((p) => ({ ...p, [prevKey]: messageInput }))
+            } else {
+                setSessionDrafts((prev) => ({ ...prev, [prevId]: messageInput }))
+            }
+            if (editingMessage && editingMessage.sessionId === props.currentSessionId) {
+                const nextKey = `${editingMessage.sessionId}:${editingMessage.messageId}`
+                const nextDraft = editingDrafts[nextKey]
+                setMessageInput(nextDraft !== undefined ? nextDraft : (editingMessage.content || ''))
+            } else {
+                const draft = sessionDrafts[props.currentSessionId] || ''
+                setMessageInput(draft)
+            }
+            lastSessionIdRef.current = props.currentSessionId
+        }
+    }, [props.currentSessionId])
 
     useEffect(() => {
         // unlock scrolling when not editing and not generating
@@ -107,10 +151,15 @@ export default function InputBox(props: Props) {
            return
         }
 
-        if (event.key === 'Escape' && editingMessage) {
+        if (event.key === 'Escape' && isEditingCurrent && editingMessage) {
+            const key = `${editingMessage.sessionId}:${editingMessage.messageId}`
             setEditingMessage(null)
-            setMessageInput('')
             setEditingLockIndex(null)
+            setEditingDrafts((prev) => {
+                const { [key]: _removed, ...rest } = prev
+                return rest
+            })
+            setMessageInput(sessionDrafts[props.currentSessionId] || '')
             return
         }
 
@@ -122,7 +171,7 @@ export default function InputBox(props: Props) {
             !event.metaKey
         ) {
             event.preventDefault()
-            if (editingMessage) {
+            if (isEditingCurrent) {
                 handleSubmitEditing()
             } else {
                 handleSubmit()
@@ -131,7 +180,7 @@ export default function InputBox(props: Props) {
         }
         if (event.keyCode === 13 && event.ctrlKey) {
             event.preventDefault()
-            if (editingMessage) {
+            if (isEditingCurrent) {
                 handleSubmitEditing()
             } else {
                 handleSubmit(false)
@@ -205,24 +254,24 @@ export default function InputBox(props: Props) {
                                 <Typography variant="caption">
                                     {isGenerating
                                         ? t('Stop generating')
-                                        : editingMessage
+                                        : isEditingCurrent
                                             ? t('Edit')
                                             : t('[Enter] send, [Shift+Enter] line break, [Ctrl+Enter] send without generating')}
                                 </Typography>
                             }
                             tooltipPlacement='top'
-                            onClick={isGenerating ? handleCancelRequest : () => (editingMessage ? handleSubmitEditing() : handleSubmit())}
+                            onClick={isGenerating ? handleCancelRequest : () => (isEditingCurrent ? handleSubmitEditing() : handleSubmit())}
                         >
                             {isGenerating ? (
                                 <StopCircleRoundedIcon/>
-                            ) : editingMessage ? (
+                            ) : isEditingCurrent ? (
                                 <EditIcon/>
                             ) : (
                                 <SendRoundedIcon/>
                             )}
                         </MiniButton>
 
-                        {editingMessage && (
+                        {isEditingCurrent && editingMessage && (
                             <MiniButton
                                 className='w-8 hover:bg-gray-100 dark:hover:bg-gray-800'
                                 style={{
@@ -237,9 +286,14 @@ export default function InputBox(props: Props) {
                                 }
                                 tooltipPlacement='top'
                                 onClick={() => {
+                                    const key = `${editingMessage.sessionId}:${editingMessage.messageId}`
                                     setEditingMessage(null)
-                                    setMessageInput('')
                                     setEditingLockIndex(null)
+                                    setEditingDrafts((prev) => {
+                                        const { [key]: _removed, ...rest } = prev
+                                        return rest
+                                    })
+                                    setMessageInput(sessionDrafts[props.currentSessionId] || '')
                                 }}
                             >
                                 <CloseRoundedIcon/>
