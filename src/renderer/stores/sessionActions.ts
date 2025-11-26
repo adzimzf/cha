@@ -405,6 +405,7 @@ export async function generate(sessionId: string, targetMsg: Message, promptMsgs
                 const startThinking = Date.now()
                 let onThinking = false
                 const throttledModifyMessage = throttle(({ text, cancel }: { text: string; cancel: () => void }) => {
+                    text = text.replaceAll('<｜end▁of▁sentence｜>', '')
                     targetMsg = { ...targetMsg, content: text, cancel }
 
                     const thinkMatch = text.match(/<think>([\s\S]*?)(<\/think>|$)/)
@@ -423,6 +424,7 @@ export async function generate(sessionId: string, targetMsg: Message, promptMsgs
                     cancel: undefined,
                     tokensUsed: estimateTokensFromMessages([...promptMsgs, targetMsg]),
                 }
+                targetMsg.content = (targetMsg.content || '').replaceAll('<｜end▁of▁sentence｜>', '')
                 modifyMessage(sessionId, targetMsg, true)
                 break
             default:
