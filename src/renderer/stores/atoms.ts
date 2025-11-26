@@ -153,3 +153,9 @@ export const editingMessageAtom = atom<{
 // when editing, lock the list to a specific last index (inclusive)
 export const editingLockIndexAtom = atom<number | null>(null)
 
+export const branchSwitchAtom = atom<{
+    msgId: string
+    direction: 'next' | 'prev'
+    ts: number
+} | null>(null)
+

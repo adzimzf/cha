@@ -29,7 +29,7 @@ import * as toastActions from '@/stores/toastActions'
 import { useTranslation } from 'react-i18next'
 import * as sessionActions from '@/stores/sessionActions'
 import { useSetAtom } from 'jotai'
-import { editingMessageAtom, editingLockIndexAtom } from '@/stores/atoms'
+import { editingMessageAtom, editingLockIndexAtom, branchSwitchAtom } from '@/stores/atoms'
 import * as scrollActions from '@/stores/scrollActions'
 
 export interface Props {
@@ -51,6 +51,7 @@ export default function MessageActions(props: Props) {
     const [showMessageInfo, setShowMessageInfo] = React.useState(false)
     const setEditingMessage = useSetAtom(editingMessageAtom)
     const setEditingLockIndex = useSetAtom(editingLockIndexAtom)
+    const setBranchSwitch = useSetAtom(branchSwitchAtom)
 
     useMemo(()=>{
         if (msg.branches && msg.branches.length > 0){
@@ -69,7 +70,7 @@ export default function MessageActions(props: Props) {
         })
     }
 
-    const handleNextMessage = (curChild: number) => {
+    const handleNextMessage = (curChild: number, dir: 'next' | 'prev') => {
 
         const promoteTargetBranch = msg.branches?.
         findIndex((element) => {
@@ -77,7 +78,7 @@ export default function MessageActions(props: Props) {
             if (typeof element[0].numIndex === 'undefined') return 0 === curChild
             return element[0].numIndex === curChild
         })
-
+         setBranchSwitch({ msgId: msg.id, direction: dir, ts: Date.now() })
          sessionActions.shiftBranch({
              sessionId:sessionId,
              msg: msg,
@@ -102,7 +103,7 @@ export default function MessageActions(props: Props) {
                 <span>
                    <IconButton
                        size={"small"}
-                       onClick={() => handleNextMessage(currentChild-1)}
+                       onClick={() => handleNextMessage(currentChild-1, 'prev')}
                        disabled={currentChild <= 0}
                    >
                     <ArrowBackIosNew fontSize={'inherit'} />
@@ -113,7 +114,12 @@ export default function MessageActions(props: Props) {
                 <Typography
                     variant="body2"
                     sx={{
-                        paddingTop: '5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        height: '28px',
+                        paddingX: '4px',
+                        marginX: '2px',
+                        lineHeight: 1.2,
                     }}
                 >
                     {currentChild+1}/{numChild+1}
@@ -128,7 +134,7 @@ export default function MessageActions(props: Props) {
                 <span>
                 <IconButton
                     size={"small"}
-                    onClick={() => handleNextMessage(currentChild+1)}
+                    onClick={() => handleNextMessage(currentChild+1, 'next')}
                     disabled={currentChild >= numChild}
                 >
                     <ArrowForwardIos fontSize={'inherit'} />

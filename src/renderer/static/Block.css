@@ -87,6 +87,27 @@ html[data-theme='light'] {
     //     background-color: #fafafa;
     // } */
 }
+
+.msg-switch-anim {
+    animation-duration: 220ms;
+    animation-timing-function: ease-out;
+    will-change: transform, opacity;
+    overflow: hidden;
+}
+.msg-switch-anim.next {
+    animation-name: msgSwitchNext;
+}
+.msg-switch-anim.prev {
+    animation-name: msgSwitchPrev;
+}
+@keyframes msgSwitchNext {
+    0% { transform: translateX(24px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+@keyframes msgSwitchPrev {
+    0% { transform: translateX(-24px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
 html[data-theme='dark'] {
     .assistant-msg {
         /* background-color: #212121; */
