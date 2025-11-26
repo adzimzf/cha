@@ -83,24 +83,27 @@ export class BasePlatform {
     }
 
     public async shouldUseDarkColors(): Promise<boolean> {
-        // if (getOS() === 'Android') {
+        const os = getOS()
+        if (os === 'Android' || os === 'iOS') {
             return this.mobile.shouldUseDarkColors()
-        // }
-       // return this.desktop.shouldUseDarkColors();
+        }
+        return this.desktop.shouldUseDarkColors()
     }
 
     public async onSystemThemeChange(callback: () => void): Promise<void> {
-        // if (getOS() === 'Android') {
+        const os = getOS()
+        if (os === 'Android' || os === 'iOS') {
             return this.mobile.onSystemThemeChange(callback)
-        // }
-       // return this.desktop.onSystemThemeChange(callback)
+        }
+        return this.desktop.onSystemThemeChange(callback)
     }
 
     public onWindowShow(callback: () => void): () => void {
-        // if (getOS() === 'Android') {
+        const os = getOS()
+        if (os === 'Android' || os === 'iOS') {
             return this.mobile.onWindowShow(callback)
-        // }
-        // return this.desktop.onWindowShow(callback);
+        }
+        return this.desktop.onWindowShow(callback)
     }
 
     public async openLink(url: string): Promise<void> {

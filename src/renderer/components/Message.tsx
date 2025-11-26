@@ -169,7 +169,7 @@ export default function Message(props: Props) {
             )}
             sx={{
                 margin: '0',
-                paddingBottom: '0.1rem',
+                paddingBottom: '2px',
                 paddingX: '1rem',
                 [theme.breakpoints.down('sm')]: {
                     paddingX: '0.3rem',
@@ -238,6 +238,8 @@ export default function Message(props: Props) {
                                             alignSelf: 'flex-start',
                                             borderRadius: '14px',
                                             padding: '10px 12px',
+                                            paddingTop: '2px',
+                                            paddingBottom: '2px',
                                             boxShadow: theme.palette.mode === 'dark' ? '0 1px 6px rgba(0,0,0,0.35)' : '0 1px 6px rgba(0,0,0,0.08)',
                                             backgroundColor: theme.palette.background.paper,
                                             color: theme.palette.text.primary,
@@ -307,6 +309,8 @@ export default function Message(props: Props) {
                                             alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
                                             borderRadius: '14px',
                                             padding: '10px 12px',
+                                            paddingTop: '2px',
+                                            paddingBottom: '2px',
                                             boxShadow: theme.palette.mode === 'dark' ? '0 1px 6px rgba(0,0,0,0.35)' : '0 1px 6px rgba(0,0,0,0.08)',
                                             backgroundColor: theme.palette.background.paper,
                                             color: theme.palette.text.primary,

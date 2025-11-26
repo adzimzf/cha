@@ -78,7 +78,7 @@ export default function MessageList(props: Props) {
                             msg={msg}
                             sessionId={currentSession.id}
                             sessionType={currentSession.type || 'chat'}
-                            className={index === 0 ? 'pt-4' : ''}
+                            className={index === 0 ? 'pt-0.5' : ''}
                             collapseThreshold={msg.role === 'system' ? 150 : undefined}
                         />
                         <div style={{height:'15px'}} />
