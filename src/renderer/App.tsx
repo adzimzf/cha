@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
-import { Box, Grid } from '@mui/material'
+import { Box, Grid, useTheme } from '@mui/material'
 import SettingDialog from './pages/SettingDialog'
 import ChatConfigWindow from './pages/ChatConfigWindow'
 import CleanWidnow from './pages/CleanWindow'
@@ -22,6 +22,7 @@ import platform from '@/packages/platform'
 import { synchronizeErrorMessage, synchronizeShowLoading } from './stores/atoms'
 
 function Main() {
+    const theme = useTheme()
     const spellCheck = useAtomValue(atoms.spellCheckAtom)
     const [openSettingWindow, setOpenSettingWindow] = useAtom(atoms.openSettingDialogAtom)
     const [setting] = useAtom(atoms.settingsAtom)
@@ -31,6 +32,9 @@ function Main() {
     const [openCopilotWindow, setOpenCopilotWindow] = React.useState(false)
     const [openSidebar, setOpenSidebar] = React.useState(false)
     const [uiScale, setUiScale] = useAtom(atoms.uiScaleAtom)
+    const [zoomVisible, setZoomVisible] = React.useState(false)
+    const [zoomValue, setZoomValue] = React.useState<number>(uiScale)
+    const zoomTimerRef = React.useRef<number | null>(null)
     useInactivityMonitor()
 
     const handleExecuteSync = async () => {
@@ -75,6 +79,17 @@ function Main() {
         return () => window.removeEventListener('keydown', onKeyDown)
     }, [uiScale, setUiScale])
 
+    useEffect(() => {
+        setZoomValue(uiScale)
+        setZoomVisible(true)
+        if (zoomTimerRef.current) {
+            window.clearTimeout(zoomTimerRef.current)
+        }
+        zoomTimerRef.current = window.setTimeout(() => {
+            setZoomVisible(false)
+        }, 1000)
+    }, [uiScale])
+
     return (
         <Box className="box-border App" spellCheck={spellCheck}>
             <Grid container className="h-full">
@@ -87,6 +102,34 @@ function Main() {
                 />
                 <MainPane toggleSidebar={() => setOpenSidebar(true)} />
             </Grid>
+            {zoomVisible && (
+                <Box
+                    sx={{
+                        position: 'fixed',
+                        top: '14px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        backgroundColor:
+                            theme.palette.mode === 'dark'
+                                ? 'rgba(0,0,0,0.6)'
+                                : 'rgba(255,255,255,0.9)',
+                        color: theme.palette.text.primary,
+                        border: '1px solid',
+                        borderColor: theme.palette.divider,
+                        borderRadius: '10px',
+                        padding: '6px 12px',
+                        fontWeight: 600,
+                        boxShadow:
+                            theme.palette.mode === 'dark'
+                                ? '0 4px 12px rgba(0,0,0,0.35)'
+                                : '0 4px 12px rgba(0,0,0,0.12)',
+                        zIndex: 1000,
+                        pointerEvents: 'none',
+                    }}
+                >
+                    {Math.round(zoomValue * 100)}%
+                </Box>
+            )}
             <SyncDialog />
             <SettingDialog
                 open={!!openSettingWindow}
