@@ -15,6 +15,7 @@ import { sanitizeUrl } from '@braintree/sanitize-url'
 import 'katex/dist/katex.min.css' // `rehype-katex` does not import the CSS for you
 import { copyToClipboard } from '@/packages/navigator'
 import platform from '@/packages/platform'
+import katex from 'katex'
 
 export default function Markdown(props: {
     children: string
@@ -22,10 +23,17 @@ export default function Markdown(props: {
     className?: string
 }) {
     const { children, hiddenCodeCopyButton, className } = props
+    const normalizeLatex = (s: string) => {
+        let c = s
+        c = c.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$')
+        c = c.replace(/\\\(([^]*?)\\\)/g, '$$$1$')
+        return c
+    }
+    const content = normalizeLatex(children)
     return useMemo(() => (
         <ReactMarkdown
             remarkPlugins={
-                [remarkGfm, remarkMath, remarkBreaks]
+                [remarkMath, remarkGfm, remarkBreaks]
             }
             rehypePlugins={[rehypeKatex]}
             className={`break-words ${className || ''}`}
@@ -46,9 +54,9 @@ export default function Markdown(props: {
                 ),
             }}
         >
-            { children }
+            { content }
         </ReactMarkdown>
-    ), [children])
+    ), [content])
 }
 
 export function Table(props: any){
@@ -56,10 +64,11 @@ export function Table(props: any){
     const theme = useTheme()
     return useMemo(() => {
         return (
-            <div style={{
-                overflowX: 'auto',
-            }}>
-                <table {...props} />
+            <div style={{ width: '100%' }}>
+                <table
+                    {...props}
+                    style={{ width: '100%', tableLayout: 'fixed' }}
+                />
             </div>
         )
     },[props.children, theme.palette.mode])
@@ -73,6 +82,35 @@ export function CodeBlock(props: any) {
         const match = /language-(\w+)/.exec(className || '')
         const language = match?.[1] || 'text'
         if (!String(children).includes('\n')) {
+            const s = String(children)
+            const parts: Array<{ type: 'text' | 'math', value: string }> = []
+            const regex = /\${1,2}([\s\S]+?)\${1,2}/g
+            let lastIndex = 0
+            let match
+            while ((match = regex.exec(s)) !== null) {
+                if (match.index > lastIndex) {
+                    parts.push({ type: 'text', value: s.slice(lastIndex, match.index) })
+                }
+                const displayMode = match[0].startsWith('$$') && match[0].endsWith('$$')
+                const html = katex.renderToString(match[1], { throwOnError: false, displayMode })
+                parts.push({ type: 'math', value: html })
+                lastIndex = regex.lastIndex
+            }
+            if (lastIndex < s.length) {
+                parts.push({ type: 'text', value: s.slice(lastIndex) })
+            }
+
+            if (parts.some(p => p.type === 'math')) {
+                return (
+                    <span>
+                        {parts.map((p, i) => p.type === 'math'
+                            ? <span key={i} dangerouslySetInnerHTML={{ __html: p.value }} />
+                            : <span key={i}>{p.value}</span>
+                        )}
+                    </span>
+                )
+            }
+
             return (
                 <code
                     {...rest}
@@ -148,6 +186,7 @@ export function CodeBlock(props: any) {
                     }
                     language={language}
                     PreTag="div"
+                    wrapLongLines
                     customStyle={{
                         marginTop: '0',
                         margin: '0',
@@ -156,6 +195,7 @@ export function CodeBlock(props: any) {
                         borderBottomLeftRadius: '0.3rem',
                         borderBottomRightRadius: '0.3rem',
                         border: 'none',
+                        overflowX: 'hidden',
                     }}
                 />
             </div>

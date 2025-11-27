@@ -1,6 +1,6 @@
 import { useMemo, useLayoutEffect } from 'react'
 import { getDefaultStore, useAtomValue } from 'jotai'
-import { activeThemeAtom, themeAtom, fontSizeAtom } from '../stores/atoms'
+import { activeThemeAtom, themeAtom, fontSizeAtom, uiScaleAtom } from '../stores/atoms'
 import { createTheme } from '@mui/material/styles'
 import { ThemeOptions } from '@mui/material/styles'
 import { Theme } from '../../shared/types'
@@ -20,6 +20,7 @@ export default function useAppTheme() {
     const theme = useAtomValue(themeAtom)
     const fontSize = useAtomValue(fontSizeAtom)
     const activeTheme = useAtomValue(activeThemeAtom)
+    const uiScale = useAtomValue(uiScaleAtom)
 
     useLayoutEffect(() => {
         switchTheme(theme)
@@ -44,6 +45,11 @@ export default function useAppTheme() {
         }
     }, [activeTheme])
 
+    useLayoutEffect(() => {
+        const base = 16
+        document.documentElement.style.fontSize = `${base * uiScale}px`
+    }, [uiScale])
+
     const themeObj = useMemo(() => createTheme(getThemeDesign(activeTheme, fontSize)), [activeTheme, fontSize])
     return themeObj
 }
@@ -63,6 +69,22 @@ export function getThemeDesign(realTheme: 'light' | 'dark', fontSize: number): T
         },
         typography: {
             fontSize,
+            fontFamily: "ui-sans-serif, -apple-system, system-ui, 'Segoe UI', Helvetica, 'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol'",
+        },
+        components: {
+            MuiCssBaseline: {
+                styleOverrides: {
+                    html: {
+                        tabSize: 4,
+                    },
+                    body: {
+                        fontFamily: "ui-sans-serif, -apple-system, system-ui, 'Segoe UI', Helvetica, 'Apple Color Emoji', Arial, sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol'",
+                    },
+                    'pre, code, textarea, .msg-content': {
+                        tabSize: 4,
+                    },
+                },
+            },
         },
     }
 }

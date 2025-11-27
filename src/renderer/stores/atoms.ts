@@ -32,6 +32,7 @@ export const showModelNameAtom = focusAtom(settingsAtom, (optic) => optic.prop('
 export const showMessageTimestampAtom = focusAtom(settingsAtom, (optic) => optic.prop('showMessageTimestamp'))
 export const themeAtom = focusAtom(settingsAtom, (optic) => optic.prop('theme'))
 export const fontSizeAtom = focusAtom(settingsAtom, (optic) => optic.prop('fontSize'))
+export const uiScaleAtom = focusAtom(settingsAtom, (optic) => optic.prop('uiScale'))
 export const spellCheckAtom = focusAtom(settingsAtom, (optic) => optic.prop('spellCheck'))
 export const allowReportingAndTrackingAtom = focusAtom(settingsAtom, (optic) => optic.prop('allowReportingAndTracking'))
 export const enableMarkdownRenderingAtom = focusAtom(settingsAtom, (optic) => optic.prop('enableMarkdownRendering'))
@@ -140,4 +141,22 @@ export const chatConfigDialogAtom = atom<Session | null>(null)
 export const showScrollToBottom = atom<boolean>(false)
 export const synchronizeShowLoading = atom<boolean>(false)
 export const synchronizeErrorMessage = atom<string>('')
+export const atBottomAtom = atom<boolean>(false)
 
+// editing state
+export const editingMessageAtom = atom<{
+    sessionId: string
+    messageId: string
+    content: string
+} | null>(null)
+
+// when editing, lock the list to a specific last index (inclusive)
+export const editingLockIndexAtom = atom<number | null>(null)
+
+export const branchSwitchAtom = atom<{
+    msgId: string
+    direction: 'next' | 'prev'
+    ts: number
+} | null>(null)
+export const sessionDraftsAtom = atom<Record<string, string>>({})
+export const editingDraftsAtom = atom<Record<string, string>>({})

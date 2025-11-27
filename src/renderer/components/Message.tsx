@@ -169,108 +169,176 @@ export default function Message(props: Props) {
             )}
             sx={{
                 margin: '0',
-                paddingBottom: '0.1rem',
+                paddingBottom: '2px',
                 paddingX: '1rem',
                 [theme.breakpoints.down('sm')]: {
                     paddingX: '0.3rem',
                 },
             }}
         >
-            <Grid container wrap="nowrap" spacing={1.5}>
-                <Grid item>
-                    <Box sx={{ marginTop: '8px' }}>
-                        {
-                            {
-                                assistant: currentSessionPicUrl ? (
-                                    <Avatar
-                                        src={currentSessionPicUrl}
-                                        sx={{
-                                            width: '28px',
-                                            height: '28px',
-                                        }}
-                                    />
-                                ) : (
-                                    <Avatar
-                                        sx={{
-                                            backgroundColor: aiIcon ? 'transparent' : theme.palette.primary.main,
-                                            width: '28px',
-                                            height: '28px',
-                                        }}
-                                    >
+            <Grid container wrap="nowrap" spacing={1.5} alignItems="flex-start">
+                {
+                    msg.role === 'assistant' ? (
+                        <>
+                            <Grid item>
+                                <Box sx={{ marginTop: '0px' }}>
+                                    <Box sx={{
+                                        backgroundColor: theme.palette.background.paper,
+                                        borderRadius: '50%',
+                                        padding: '3px',
+                                        boxShadow: theme.palette.mode === 'dark' ? '4px 6px 12px rgba(0,0,0,0.45)' : '4px 6px 12px rgba(0,0,0,0.15)',
+                                        border: '1px solid',
+                                        borderColor: theme.palette.divider,
+                                    }}>
                                         {
-                                            aiIcon ? (
-                                                <img
-                                                    src={aiIcon}
-                                                    alt="AI Icon"
-                                                    style={{ width: '28px', height: '28px' }}
+                                            currentSessionPicUrl ? (
+                                                <Avatar
+                                                    src={currentSessionPicUrl}
+                                                    sx={{ width: '22px', height: '22px' }}
                                                 />
                                             ) : (
-                                                <SmartToyIcon fontSize='small' />
+                                                <Avatar sx={{ backgroundColor: aiIcon ? 'transparent' : theme.palette.primary.main, width: '22px', height: '22px' }}>
+                                                    {aiIcon ? (
+                                                        <img src={aiIcon} alt="AI Icon" style={{ width: '22px', height: '22px', borderRadius: '50%' }} />
+                                                    ) : (
+                                                        <SmartToyIcon fontSize='small' />
+                                                    )}
+                                                </Avatar>
                                             )
                                         }
-                                    </Avatar>
-                                ),
-                                user: (
-                                   <></>
-                                ),
-                                system:
-                                        <Avatar
-                                            sx={{
-                                                backgroundColor: theme.palette.warning.main,
-                                                width: '28px',
-                                                height: '28px',
-                                            }}
-                                        >
-                                            <SettingsIcon fontSize='small' />
-                                        </Avatar>
-                            }[msg.role]
-                        }
-                    </Box>
-                </Grid>
-                <Grid
-                    item
-                    xs
-                    sm
-                    container
-                    sx={{
-                        width: '0px',
-                        paddingRight: '15px',
-                        justifyContent: msg.role === 'user' ? 'flex-end' : 'center',
-                    }}
-                >
-                    <Grid
-                        item
-                        xs
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            textAlign: msg.role === 'user' ? 'right' : 'left',
-                        }}
-                    >
-                        <Box
-                            className={cn('msg-content', { 'msg-content-small': small })}
-                            sx={{
-                                ...(small ? { fontSize: theme.typography.body2.fontSize } : {}),
-                                textAlign: msg.role === 'user' ? 'right' : 'left',
-                            }}
-                        >
-                            {showLoadingIcon && <LoadingSpinner speed={0.5} size={'15px'} />}
-                            {enableMarkdownRendering && !isCollapsed ? (
-                                messageContent
-                            ) : (
-                                <div>
-                                    {content}
-                                    {needCollapse && isCollapsed && CollapseButton}
-                                </div>
-                            )}
-                        </Box>
-                        <MessageErrTips msg={msg} />
-                        {
-                            needCollapse && !isCollapsed && CollapseButton
-                        }
-                        <MessageActions msg={msg} sessionId={props.sessionId} setEditMessage={setEditMessage} editMessage={editMessage}/>
-                    </Grid>
-                </Grid>
+                                    </Box>
+                                </Box>
+                            </Grid>
+                            <Grid
+                                item
+                                xs
+                                sm
+                                container
+                                sx={{
+                                    width: '0px',
+                                    paddingRight: '15px',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Grid
+                                    item
+                                    xs
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        textAlign: 'left',
+                                    }}
+                                >
+                                    <Box
+                                        className={cn('msg-content', { 'msg-content-small': small })}
+                                        sx={{
+                                            ...(small ? { fontSize: theme.typography.body2.fontSize } : {}),
+                                            textAlign: 'left',
+                                            maxWidth: '860px',
+                                            alignSelf: 'flex-start',
+                                            borderRadius: '14px',
+                                            padding: '10px 12px',
+                                            paddingTop: '2px',
+                                            paddingBottom: '2px',
+                                            boxShadow: theme.palette.mode === 'dark' ? '0 1px 6px rgba(0,0,0,0.35)' : '0 1px 6px rgba(0,0,0,0.08)',
+                                            backgroundColor: theme.palette.background.paper,
+                                            color: theme.palette.text.primary,
+                                            lineHeight: 1.7,
+                                            overflowX: 'hidden',
+                                            wordBreak: 'break-word',
+                                        }}
+                                    >
+                                        {showLoadingIcon && <LoadingSpinner speed={0.5} size={'15px'} />}
+                                        {enableMarkdownRendering && !isCollapsed ? (
+                                            messageContent
+                                        ) : (
+                                            <div>
+                                                {content}
+                                                {needCollapse && isCollapsed && CollapseButton}
+                                            </div>
+                                        )}
+                                    </Box>
+                                    <MessageErrTips msg={msg} />
+                                    {needCollapse && !isCollapsed && CollapseButton}
+                                    <MessageActions msg={msg} sessionId={props.sessionId} setEditMessage={setEditMessage} editMessage={editMessage}/>
+                                </Grid>
+                            </Grid>
+                        </>
+                    ) : (
+                        <>
+                            <Grid item>
+                                <Box sx={{ marginTop: '0px' }}>
+                                    {
+                                        {
+                                            user: (
+                                                <></>
+                                            ),
+                                            system: (
+                                                <Avatar sx={{ backgroundColor: theme.palette.warning.main, width: '28px', height: '28px' }}>
+                                                    <SettingsIcon fontSize='small' />
+                                                </Avatar>
+                                            )
+                                        }[msg.role]
+                                    }
+                                </Box>
+                            </Grid>
+                            <Grid
+                                item
+                                xs
+                                sm
+                                container
+                                sx={{
+                                    width: '0px',
+                                    paddingRight: '15px',
+                                    justifyContent: msg.role === 'user' ? 'flex-end' : 'center',
+                                }}
+                            >
+                                <Grid
+                                    item
+                                    xs
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        textAlign: msg.role === 'user' ? 'right' : 'left',
+                                    }}
+                                >
+                                    <Box
+                                        className={cn('msg-content', { 'msg-content-small': small })}
+                                        sx={{
+                                            ...(small ? { fontSize: theme.typography.body2.fontSize } : {}),
+                                            textAlign: msg.role === 'user' ? 'right' : 'left',
+                                            maxWidth: '860px',
+                                            alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                                            borderRadius: '14px',
+                                            padding: '10px 12px',
+                                            paddingTop: '2px',
+                                            paddingBottom: '2px',
+                                            boxShadow: theme.palette.mode === 'dark' ? '0 1px 6px rgba(0,0,0,0.35)' : '0 1px 6px rgba(0,0,0,0.08)',
+                                            backgroundColor: theme.palette.background.paper,
+                                            color: theme.palette.text.primary,
+                                            lineHeight: 1.7,
+                                            overflowX: 'hidden',
+                                            wordBreak: 'break-word',
+                                        }}
+                                    >
+                                        {showLoadingIcon && <LoadingSpinner speed={0.5} size={'15px'} />}
+                                        {enableMarkdownRendering && !isCollapsed ? (
+                                            messageContent
+                                        ) : (
+                                            <div>
+                                                {content}
+                                                {needCollapse && isCollapsed && CollapseButton}
+                                            </div>
+                                        )}
+                                    </Box>
+                                    <MessageErrTips msg={msg} />
+                                    {needCollapse && !isCollapsed && CollapseButton}
+                                    <MessageActions msg={msg} sessionId={props.sessionId} setEditMessage={setEditMessage} editMessage={editMessage}/>
+                                </Grid>
+                            </Grid>
+                        </>
+                    )
+                }
             </Grid>
         </Box>
     )

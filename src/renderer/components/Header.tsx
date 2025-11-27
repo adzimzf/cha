@@ -1,15 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Button, IconButton, Typography, useTheme } from '@mui/material'
 import * as atoms from '../stores/atoms'
-import { useAtomValue, useSetAtom } from 'jotai'
+import { useAtomValue } from 'jotai'
 import * as sessionActions from '../stores/sessionActions'
 import Toolbar from './Toolbar'
 import { cn } from '@/lib/utils'
 import MenuOpenRoundedIcon from '@mui/icons-material/MenuOpenRounded';
 import { getDefaultStore } from 'jotai/index'
-import { getModelName } from '@/packages/models'
 import AddIcon from '@mui/icons-material/AddCircleOutline'
-import { trackingEvent } from '@/packages/event'
 
 interface Props {
     toggleSidebar: (newOpen: boolean) => void
@@ -19,7 +17,6 @@ interface Props {
 export default function Header(props: Props) {
     const theme = useTheme()
     const currentSession = useAtomValue(atoms.currentSessionAtom)
-    const setChatConfigDialogSession = useSetAtom(atoms.chatConfigDialogAtom)
     const store = getDefaultStore()
     const settings = store.get(atoms.settingsAtom)
 
@@ -63,7 +60,7 @@ export default function Header(props: Props) {
 
     return (
         <div
-            className="pt-3 pb-2 px-4"
+            className="pt-3 pb-2 px-4 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 backdrop-blur-sm"
             style={{
                 borderBottomWidth: '1px',
                 borderBottomStyle: 'solid',

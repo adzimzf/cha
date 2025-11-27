@@ -1,21 +1,29 @@
 .msg-block {
     -webkit-user-select: text;
     user-select: text;
+    overflow-x: hidden;
 
+    .msg-content {
+        line-height: 1.7;
+        overflow-x: hidden;
+        /* word-break: break-word; */
+        overflow-wrap: anywhere;
+    }
     .msg-content p {
-        margin: 0.6rem 0 0.4rem 0;
+        margin: 0.7rem 0 0.6rem 0;
     }
     .msg-content-small p {
-        margin: 0.3rem 0 0.2rem 0;
+        margin: 0.4rem 0 0.3rem 0;
     }
 
-    .msg-content ol {
-        padding-inline-start: 25px;
-    }
-
+    .msg-content ol,
     .msg-content ul {
         padding-inline-start: 25px;
     }
+    .msg-content li {
+        margin: 0.25rem 0;
+    }
+
     .msg-content img {
         width: 100%;
         max-width: 40rem;
@@ -83,6 +91,7 @@ html[data-theme='light'] {
     //     background-color: #fafafa;
     // } */
 }
+
 html[data-theme='dark'] {
     .assistant-msg {
         /* background-color: #212121; */

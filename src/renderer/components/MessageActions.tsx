@@ -28,6 +28,9 @@ import { copyToClipboard } from '@/packages/navigator'
 import * as toastActions from '@/stores/toastActions'
 import { useTranslation } from 'react-i18next'
 import * as sessionActions from '@/stores/sessionActions'
+import { useSetAtom } from 'jotai'
+import { editingMessageAtom, editingLockIndexAtom, branchSwitchAtom } from '@/stores/atoms'
+import * as scrollActions from '@/stores/scrollActions'
 
 export interface Props {
     msg: Message
@@ -46,6 +49,9 @@ export default function MessageActions(props: Props) {
     const [numChild, setNumChild] = React.useState(0)
     const [currentChild, setCurrentChild] = React.useState(0)
     const [showMessageInfo, setShowMessageInfo] = React.useState(false)
+    const setEditingMessage = useSetAtom(editingMessageAtom)
+    const setEditingLockIndex = useSetAtom(editingLockIndexAtom)
+    const setBranchSwitch = useSetAtom(branchSwitchAtom)
 
     useMemo(()=>{
         if (msg.branches && msg.branches.length > 0){
@@ -64,7 +70,7 @@ export default function MessageActions(props: Props) {
         })
     }
 
-    const handleNextMessage = (curChild: number) => {
+    const handleNextMessage = (curChild: number, dir: 'next' | 'prev') => {
 
         const promoteTargetBranch = msg.branches?.
         findIndex((element) => {
@@ -72,7 +78,7 @@ export default function MessageActions(props: Props) {
             if (typeof element[0].numIndex === 'undefined') return 0 === curChild
             return element[0].numIndex === curChild
         })
-
+         setBranchSwitch({ msgId: msg.id, direction: dir, ts: Date.now() })
          sessionActions.shiftBranch({
              sessionId:sessionId,
              msg: msg,
@@ -97,7 +103,7 @@ export default function MessageActions(props: Props) {
                 <span>
                    <IconButton
                        size={"small"}
-                       onClick={() => handleNextMessage(currentChild-1)}
+                       onClick={() => handleNextMessage(currentChild-1, 'prev')}
                        disabled={currentChild <= 0}
                    >
                     <ArrowBackIosNew fontSize={'inherit'} />
@@ -108,7 +114,12 @@ export default function MessageActions(props: Props) {
                 <Typography
                     variant="body2"
                     sx={{
-                        paddingTop: '5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        height: '28px',
+                        paddingX: '4px',
+                        marginX: '2px',
+                        lineHeight: 1.2,
                     }}
                 >
                     {currentChild+1}/{numChild+1}
@@ -123,7 +134,7 @@ export default function MessageActions(props: Props) {
                 <span>
                 <IconButton
                     size={"small"}
-                    onClick={() => handleNextMessage(currentChild+1)}
+                    onClick={() => handleNextMessage(currentChild+1, 'next')}
                     disabled={currentChild >= numChild}
                 >
                     <ArrowForwardIos fontSize={'inherit'} />
@@ -139,12 +150,23 @@ export default function MessageActions(props: Props) {
     }
 
 
+    const pillBg = theme.palette.background.paper
     return (
         <Stack
             direction="row"
-            spacing={0}
+            spacing={0.5}
+            className="opacity-0 group-hover/message:opacity-100 transition-opacity"
             sx={{
                 justifyContent: msg.role === 'user' ? "flex-end" : "flex-start",
+                alignItems: 'center',
+                alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                marginTop: '4px',
+                borderRadius: '12px',
+                backgroundColor: pillBg,
+                padding: '2px 6px',
+                boxShadow: theme.palette.mode === 'dark' ? '0 1px 6px rgba(0,0,0,0.35)' : '0 1px 6px rgba(0,0,0,0.08)',
+                color: theme.palette.text.secondary,
+                width: 'fit-content',
             }}
         >
             {paginationCmp()}
@@ -157,7 +179,9 @@ export default function MessageActions(props: Props) {
                     }}
                     arrow
                 >
-                    <IconButton size="small" onClick={handleRegenerate}>
+                    <IconButton size="small" color="inherit" onClick={handleRegenerate}
+                        sx={{ '&:hover': { backgroundColor: theme.palette.action.hover } }}
+                    >
                         <CachedRounded fontSize={'inherit'} />
                     </IconButton>
                 </Tooltip>
@@ -169,7 +193,17 @@ export default function MessageActions(props: Props) {
                     }}
                     arrow
                 >
-                    <IconButton size="small" onClick={()=> setEditMessage(true)}>
+                    <IconButton size="small" color="inherit" onClick={()=> {
+                        const session = sessionActions.getSession(sessionId)
+                        if (session) {
+                            const idx = session.messages.findIndex(m => m.id === msg.id)
+                            const lockIndex = Math.max(0, idx - 1)
+                            setEditingLockIndex(lockIndex)
+                        }
+                        setEditingMessage({ sessionId, messageId: msg.id, content: msg.content })
+                    }}
+                        sx={{ '&:hover': { backgroundColor: theme.palette.action.hover } }}
+                    >
                         <Edit fontSize={'inherit'} />
                     </IconButton>
                 </Tooltip>
@@ -184,6 +218,8 @@ export default function MessageActions(props: Props) {
             >
                 <IconButton
                 size="small"
+                color="inherit"
+                sx={{ '&:hover': { backgroundColor: theme.palette.action.hover } }}
                 onClick={() => {
                     copyToClipboard(msg.content);
                     toastActions.add(t('copied to clipboard'));
@@ -207,6 +243,8 @@ export default function MessageActions(props: Props) {
             >
                 <IconButton 
                     size="small" 
+                    color="inherit"
+                    sx={{ '&:hover': { backgroundColor: theme.palette.action.hover } }}
                     onClick={() => setShowMessageInfo(!showMessageInfo)}
                 >
                     <InfoOutlined fontSize={'inherit'} />
@@ -220,7 +258,6 @@ interface KeyValueListProps {
     msg: Message;
 }
 const KeyValueList = ({ msg }: KeyValueListProps) => {
-    const theme = useTheme()
 
     const entries = [
         {

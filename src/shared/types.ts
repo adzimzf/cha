@@ -178,6 +178,7 @@ export interface Settings extends ModelSettings {
     language: Language
     languageInited?: boolean
     fontSize: number
+    uiScale: number
     spellCheck: boolean
 
     defaultPrompt?: string

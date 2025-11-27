@@ -5,17 +5,35 @@ export class DesktopPlatform implements PlatformInterface {
     public constructor() {}
 
     public async shouldUseDarkColors(): Promise<boolean> {
-        // const theme = await getCurrentWindow().theme()
-        // return 'dark' === theme
-        return false;
+        try {
+            const media = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)')
+            if (media) return media.matches
+        } catch {}
+        try {
+            const theme = await getCurrentWindow().theme()
+            return theme === 'dark'
+        } catch {}
+        return false
     }
 
     public async onSystemThemeChange(callback: () => void): Promise<void> {
-        // const unlisted = await getCurrentWindow().onThemeChanged(({ payload: theme }) => {
-        //     callback()
-        // })
-        // return unlisted()
-        return
+        try {
+            const media = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)')
+            if (media) {
+                const handler = () => callback()
+                if ('addEventListener' in media) {
+                    media.addEventListener('change', handler)
+                } else if ('addListener' in media) {
+                    (media as any).addListener(handler)
+                }
+                return
+            }
+        } catch {}
+        try {
+            await getCurrentWindow().onThemeChanged(() => {
+                callback()
+            })
+        } catch {}
     }
 
     public onWindowShow(callback: () => void): () => void {
