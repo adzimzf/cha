@@ -497,6 +497,7 @@ async function _generateName(sessionId: string, modifyName: (sessionId: string, 
             )
         )
         name = name.replace(/<think>[\s\S]*?<\/think>/g, '')
+        name = name.replaceAll('<｜end▁of▁sentence｜>', '')
         name = name.replace(/^['"]+|['"]+$/g, '');
         name = name.slice(0, 30)
         modifyName(session.id, name)
