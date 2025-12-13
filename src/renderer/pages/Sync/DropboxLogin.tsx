@@ -94,19 +94,22 @@ export default  function  DropboxLogin(props: Props) {
             const refreshToken = res[1];
             if (authToken === "" || refreshToken === "") return;
 
-            settingsEdit.syncConfig = {
+            const nextSyncConfig = {
                 ...settingsEdit.syncConfig,
                 providersConfig: {
                     ...(settingsEdit.syncConfig?.providersConfig || {}),
                     Dropbox: {
                         ...(settingsEdit.syncConfig?.providersConfig?.Dropbox || {}),
                         authToken: authToken,
-                        refreshToken:refreshToken,
-                    }
-                }
+                        refreshToken: refreshToken,
+                    },
+                },
             };
 
-            setSettingsEdit(settingsEdit);
+            setSettingsEdit({
+                ...settingsEdit,
+                syncConfig: nextSyncConfig,
+            });
 
             setOpen(false)
         }catch (e) {

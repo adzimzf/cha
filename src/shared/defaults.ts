@@ -11,9 +11,9 @@ import {
     SyncFrequencyList,
 } from './types'
 import { v4 as uuidv4 } from 'uuid'
-import SyncSettings from '@/pages/SettingDialog/SyncSetting2'
 
 export function settings(): Settings {
+    // initialize provider list and set sensible defaults
     return {
         modelProvider: '',
         modelProviderID: '',
@@ -96,7 +96,7 @@ export function sessions(): Session[] {
 export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
     return [
         {
-            uuid: uuidv4(),
+            uuid: 'provider-anthropic',
             name: 'Anthropic',
             baseURL: 'https://api.anthropic.com/v1/',
             temperature: DefaultTemperature,
@@ -104,7 +104,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             icon: 'https://images.seeklogo.com/logo-png/51/2/anthropic-icon-logo-png_seeklogo-515014.png',
         },
         {
-            uuid: uuidv4(),
+            uuid: 'provider-deepseek',
             name: 'Deepseek',
             baseURL: 'https://api.deepseek.com',
             temperature: DefaultTemperature,
@@ -112,7 +112,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             icon: 'https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/deepseek-color.png',
         },
         {
-            uuid: uuidv4(),
+            uuid: 'provider-deepinfra',
             name: 'Deepinfra',
             baseURL: 'https://api.deepinfra.com/v1/openai',
             temperature: DefaultTemperature,
@@ -120,7 +120,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             icon:'https://deepinfra.com/deepinfra-logo-512.webp',
         },
         {
-            uuid: uuidv4(),
+            uuid: 'provider-gemini',
             name: 'Gemini',
             baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai',
             temperature: DefaultTemperature,
@@ -128,7 +128,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             icon:'https://lh3.googleusercontent.com/Xtt-WZqHiV8OjACMMMr6wMdoMGE7bABi-HYujupzevufo1kiHUFQZukI1JILhjItrPNrDWLq6pfd=s600-w600',
         },
         {
-            uuid: uuidv4(),
+            uuid: 'provider-grok',
             name: 'Grok',
             baseURL: 'https://api.groq.com/openai/v1',
             temperature: DefaultTemperature,
@@ -136,7 +136,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             icon: 'https://play-lh.googleusercontent.com/dQRKhi30KpzG3gww3TdVLzyIAVuOAWylnAcgnEUxqfpm2A8dEt2sgApVvtKAy-DO8aI',
         },
         {
-            uuid: uuidv4(),
+            uuid: 'provider-openai',
             name: 'Open AI',
             baseURL: 'https://api.openai.com',
             temperature: DefaultTemperature,
@@ -144,7 +144,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             icon:'https://static.vecteezy.com/system/resources/previews/024/558/811/non_2x/openai-chatgpt-logo-icon-free-png.png'
         },
         {
-            uuid: uuidv4(),
+            uuid: 'provider-perplexity',
             name: 'Perplexity',
             baseURL: 'https://api.perplexity.ai',
             temperature: DefaultTemperature,
@@ -152,7 +152,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             icon:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdFSv1lxsEwowysGSVpPBM_VMwocDGqxqRyg&s',
         },
         {
-            uuid: uuidv4(),
+            uuid: 'provider-siliconflow',
             name: 'Siliconflow',
             baseURL: 'https://api.siliconflow.cn/v1',
             temperature: DefaultTemperature,
