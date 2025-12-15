@@ -4,7 +4,7 @@ import Avatar from '@mui/material/Avatar'
 import {
     Typography,
     Grid,
-    useTheme, MenuItem
+    useTheme, MenuItem, Dialog
 } from '@mui/material'
 import PersonIcon from '@mui/icons-material/Person'
 import SmartToyIcon from '@mui/icons-material/SmartToy'
@@ -71,6 +71,8 @@ export default function Message(props: Props) {
     const [editMessage, setEditMessage] = React.useState(false)
     const [aiIcon , setAiIcon] = useState('')
     const [settings, _] = useAtom(settingsAtom)
+    const [previewOpen, setPreviewOpen] = useState(false)
+    const [previewSrc, setPreviewSrc] = useState<string>('')
 
     const { msg, className, collapseThreshold, hiddenButtonGroup, small } = props
 
@@ -230,6 +232,32 @@ export default function Message(props: Props) {
                                         textAlign: 'left',
                                     }}
                                 >
+                                    {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
+                                        <Box sx={{ mt: 1 }}>
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                {msg.attachments
+                                                    .filter((att: any) => att.type === 'image' && !!att.dataUrl)
+                                                    .map((att: any, ix: number) => (
+                                                        <Box
+                                                            key={ix}
+                                                            sx={{
+                                                                position: 'relative',
+                                                                width: 96,
+                                                                height: 96,
+                                                                borderRadius: 1,
+                                                                overflow: 'hidden',
+                                                                border: '1px solid',
+                                                                borderColor: theme.palette.divider,
+                                                                backgroundColor: theme.palette.background.paper,
+                                                            }}
+                                                            onClick={() => { setPreviewSrc(att.dataUrl); setPreviewOpen(true) }}
+                                                        >
+                                                            <img src={att.dataUrl} alt={att.name || 'image'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        </Box>
+                                                    ))}
+                                            </Box>
+                                        </Box>
+                                    )}
                                     <Box
                                         className={cn('msg-content', { 'msg-content-small': small })}
                                         sx={{
@@ -305,6 +333,32 @@ export default function Message(props: Props) {
                                         textAlign: msg.role === 'user' ? 'right' : 'left',
                                     }}
                                 >
+                                    {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
+                                        <Box sx={{ mt: 1, display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                                {msg.attachments
+                                                    .filter((att: any) => att.type === 'image' && !!att.dataUrl)
+                                                    .map((att: any, ix: number) => (
+                                                        <Box
+                                                            key={ix}
+                                                            sx={{
+                                                                position: 'relative',
+                                                                width: 96,
+                                                                height: 96,
+                                                                borderRadius: 1,
+                                                                overflow: 'hidden',
+                                                                border: '1px solid',
+                                                                borderColor: theme.palette.divider,
+                                                                backgroundColor: theme.palette.background.paper,
+                                                            }}
+                                                            onClick={() => { setPreviewSrc(att.dataUrl); setPreviewOpen(true) }}
+                                                        >
+                                                            <img src={att.dataUrl} alt={att.name || 'image'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        </Box>
+                                                    ))}
+                                            </Box>
+                                        </Box>
+                                    )}
                                     <Box
                                         className={cn('msg-content', { 'msg-content-small': small })}
                                         sx={{
@@ -344,6 +398,11 @@ export default function Message(props: Props) {
                     )
                 }
             </Grid>
+            <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)}>
+                <Box sx={{ maxWidth: '90vw', maxHeight: '90vh' }}>
+                    <img src={previewSrc} alt={'image'} style={{ maxWidth: '90vw', maxHeight: '90vh', display: 'block' }} />
+                </Box>
+            </Dialog>
         </Box>
     )
 }

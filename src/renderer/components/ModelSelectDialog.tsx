@@ -9,6 +9,7 @@ import {
     Popover,
 } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
+import ImageIcon from '@mui/icons-material/ImageOutlined';
 import { OpenAICompModel, Session, Settings } from '../../shared/types'
 import { useAtom } from 'jotai'
 import { settingsAtom } from '@/stores/atoms'
@@ -44,10 +45,12 @@ export function ModelSelectDialog(props: Props) {
     };
 
     const open = Boolean(anchorEl);
-    const filteredModels = props.settings.modelProviderList?.find((provider) =>{
+    const filteredProvider = props.settings.modelProviderList?.find((provider) =>{
         if (currentSession.modelProviderID) return provider.uuid === currentSession.modelProviderID;
         return provider.uuid === props.settings.modelProviderID
-    })?.modelList?.filter(model =>  model.id.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
+    const filteredModels = filteredProvider?.modelList?.filter(model =>  model.id.toLowerCase().includes(searchTerm.toLowerCase()));
+    const imageCapable = new Set(filteredProvider?.imageCapableModelIDs || [])
 
     return (
         <div>
@@ -100,6 +103,11 @@ export function ModelSelectDialog(props: Props) {
                             }}
                         >
                             <ListItemText primary={model.id} />
+                            {imageCapable.has(model.id) && (
+                                <IconButton edge="end" disableRipple>
+                                    <ImageIcon />
+                                </IconButton>
+                            )}
                             {selectedModel === model.id && (
                                 <IconButton edge="end" disableRipple>
                                     <CheckIcon />

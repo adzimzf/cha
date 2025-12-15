@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import MenuOpenRoundedIcon from '@mui/icons-material/MenuOpenRounded';
 import { getDefaultStore } from 'jotai/index'
 import AddIcon from '@mui/icons-material/AddCircleOutline'
+import ImageIcon from '@mui/icons-material/ImageOutlined'
 
 interface Props {
     toggleSidebar: (newOpen: boolean) => void
@@ -57,6 +58,9 @@ export default function Header(props: Props) {
     }
 
     if (providerName === '') providerName = settings.modelProvider
+
+    const currentProvider = settings.modelProviderList?.find((p) => p.uuid === (currentSession.modelProviderID || settings.modelProviderID))
+    const isVisionModel = !!(currentProvider?.imageCapableModelIDs || []).includes(selectedMode)
 
     return (
         <div
@@ -127,6 +131,9 @@ export default function Header(props: Props) {
                         }}
                     >
                         {selectedMode}
+                        {isVisionModel && (
+                            <ImageIcon sx={{ fontSize: '18px', ml: 0.5, verticalAlign: 'middle' }} />
+                        )}
                     </Typography>
                 </Button>
                 <div onClick={handleCreateNewSession}>

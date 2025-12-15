@@ -1,14 +1,21 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Typography, useTheme } from '@mui/material'
+import { Box, IconButton, Typography, useTheme, Dialog } from '@mui/material'
 import { SessionType, createMessage } from '../../shared/types'
 import platform from '../packages/platform'
 import { useTranslation } from 'react-i18next'
 import * as atoms from '../stores/atoms'
-import { useAtom, useSetAtom } from 'jotai'
+import { useAtom, useSetAtom, useAtomValue } from 'jotai'
 import * as sessionActions from '../stores/sessionActions'
 import {
     Settings2
 } from 'lucide-react'
+import InsertPhotoIcon from '@mui/icons-material/InsertPhotoOutlined';
+import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import StyledMenu from '@/components/StyledMenu'
+import { MenuItem } from '@mui/material'
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import EditIcon from '@mui/icons-material/Edit';
 import StopCircleRoundedIcon from '@mui/icons-material/StopCircleRounded';
@@ -20,6 +27,8 @@ import MiniButton from './MiniButton'
 import _ from 'lodash'
 import * as scrollActions from '@/stores/scrollActions'
 import { editingMessageAtom, editingLockIndexAtom } from '@/stores/atoms'
+import { settingsAtom } from '@/stores/atoms'
+import * as toastActions from '@/stores/toastActions'
 
 export interface Props {
     currentSessionId: string
@@ -31,7 +40,16 @@ export default function InputBox(props: Props) {
     const setChatConfigDialogSession = useSetAtom(atoms.chatConfigDialogAtom)
     const { t } = useTranslation()
     const [messageInput, setMessageInput] = useState('')
+    const [attachedImages, setAttachedImages] = useState<{ name?: string; mime: string; dataUrl: string }[]>([])
+    const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
+    const replaceInputRef = useRef<HTMLInputElement>(null)
+    const [replaceIndex, setReplaceIndex] = useState<number | null>(null)
+    const [previewOpen, setPreviewOpen] = useState(false)
+    const [previewSrc, setPreviewSrc] = useState<string>('')
+    const [previewName, setPreviewName] = useState<string>('')
     const [isMobile, setIsMobile] = useState(false)
+    const [isNarrow, setIsNarrow] = useState(false)
     const [editingMessage, setEditingMessage] = useAtom(editingMessageAtom)
     const [, setEditingLockIndex] = useAtom(editingLockIndexAtom)
     const [sessionDrafts, setSessionDrafts] = useAtom(atoms.sessionDraftsAtom)
@@ -39,6 +57,7 @@ export default function InputBox(props: Props) {
     const lastSessionIdRef = useRef(props.currentSessionId)
     const isEditingCurrent = !!editingMessage && editingMessage.sessionId === props.currentSessionId
     const editingKey = editingMessage ? `${editingMessage.sessionId}:${editingMessage.messageId}` : ''
+    const settings = useAtomValue(settingsAtom)
 
     // Get current session state
     const session = sessionActions.getSession(props.currentSessionId)
@@ -50,6 +69,9 @@ export default function InputBox(props: Props) {
             return
         }
         const newMessage = createMessage('user', messageInput)
+        if (attachedImages.length > 0) {
+            newMessage.attachments = attachedImages.map((img) => ({ type: 'image', mime: img.mime, dataUrl: img.dataUrl, name: img.name }))
+        }
         sessionActions.submitNewUserMessage({
             currentSessionId: props.currentSessionId,
             newUserMsg: newMessage,
@@ -57,6 +79,7 @@ export default function InputBox(props: Props) {
         })
 
         setMessageInput('')
+        setAttachedImages([])
         setSessionDrafts((prev) => ({ ...prev, [props.currentSessionId]: '' }))
         trackingEvent('send_message', { event_category: 'user' })
     }
@@ -67,6 +90,9 @@ export default function InputBox(props: Props) {
             return
         }
         const newMessage = createMessage('user', messageInput)
+        if (attachedImages.length > 0) {
+            newMessage.attachments = attachedImages.map((img) => ({ type: 'image', mime: img.mime, dataUrl: img.dataUrl, name: img.name }))
+        }
         const key = `${editingMessage.sessionId}:${editingMessage.messageId}`
         setEditingMessage(null)
         setEditingLockIndex(null)
@@ -105,9 +131,28 @@ export default function InputBox(props: Props) {
     }, [])
 
     useEffect(() => {
+        const handleResize = () => {
+            setIsNarrow(window.innerWidth <= 600)
+        }
+        handleResize()
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
+    useEffect(() => {
         if (editingMessage && editingMessage.sessionId === props.currentSessionId) {
             const draft = editingDrafts[editingKey]
             setMessageInput(draft !== undefined ? draft : (editingMessage.content || ''))
+            const sessionForEdit = sessionActions.getSession(props.currentSessionId)
+            const msgForEdit = sessionForEdit?.messages?.find(m => m.id === editingMessage.messageId)
+            if (msgForEdit?.attachments && Array.isArray(msgForEdit.attachments)) {
+                const imgs = msgForEdit.attachments
+                    .filter((att) => att.type === 'image' && !!att.dataUrl)
+                    .map((att) => ({ name: att.name, mime: att.mime, dataUrl: att.dataUrl }))
+                setAttachedImages(imgs)
+            } else {
+                setAttachedImages([])
+            }
         }
     }, [editingMessage, props.currentSessionId, editingDrafts])
 
@@ -194,13 +239,68 @@ export default function InputBox(props: Props) {
         scrollActions.scrollToBottom()
     }
 
-    
+    const onAttachImage = () => {
+        if (fileInputRef.current) fileInputRef.current.click()
+    }
+
+    const onFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || [])
+        const imageFiles = files.filter((f) => f.type.startsWith('image/'))
+        const readers = imageFiles.map((file) => new Promise<{ name: string; mime: string; dataUrl: string }>((resolve) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve({ name: file.name, mime: file.type, dataUrl: reader.result as string })
+            reader.readAsDataURL(file)
+        }))
+        const results = await Promise.all(readers)
+        setAttachedImages((prev) => [...prev, ...results])
+        e.target.value = ''
+        setMenuAnchor(null)
+    }
+
+    const onEditImage = (ix: number) => {
+        setReplaceIndex(ix)
+        if (replaceInputRef.current) replaceInputRef.current.click()
+    }
+
+    const onReplaceFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || [])
+        const file = files.find((f) => f.type.startsWith('image/'))
+        if (!file || replaceIndex === null) {
+            e.target.value = ''
+            setReplaceIndex(null)
+            return
+        }
+        const reader = new FileReader()
+        reader.onload = () => {
+            const updated = { name: file.name, mime: file.type, dataUrl: reader.result as string }
+            setAttachedImages((prev) => prev.map((img, i) => (i === replaceIndex ? updated : img)))
+            setReplaceIndex(null)
+        }
+        reader.readAsDataURL(file)
+        e.target.value = ''
+    }
+
+    const onRemoveImage = (ix: number) => {
+        setAttachedImages((prev) => prev.filter((_, i) => i !== ix))
+    }
+
+    const openMenu = (el: HTMLElement) => setMenuAnchor(el)
+    const closeMenu = () => setMenuAnchor(null)
+
+    const isVisionModelSelected = () => {
+        const currentProvider = settings.modelProviderList?.find(
+            (p) => p.uuid === (session?.modelProviderID || settings.modelProviderID)
+        )
+        const selectedModel = session?.model || currentProvider?.selectedModel || ''
+        const list = currentProvider?.imageCapableModelIDs || []
+        return !!list.includes(selectedModel)
+    }
 
     return (
         <div className={cn('w-full mx-auto flex flex-col')}>
             <div className='w-full max-w-[980px] mx-auto my-3 pb-2 flex-1 min-h-0 rounded-xl'
             style={{
-                padding: '10px',
+                padding: isNarrow ? '6px' : '10px',
                 backgroundColor: theme.palette.background.paper,
                 border: '1px solid',
                 borderColor: theme.palette.divider,
@@ -208,20 +308,61 @@ export default function InputBox(props: Props) {
                 boxShadow: theme.palette.mode === 'dark' ? '0 1px 6px rgba(0,0,0,0.35)' : '0 1px 6px rgba(0,0,0,0.08)'
             }}
             >
-                    <div className='flex items-end gap-2'>
-                        <MiniButton className='mr-2' style={{ color: theme.palette.text.primary }}
-                            onClick={() => setChatConfigDialogSession(sessionActions.getCurrentSession())}
+                    {attachedImages.length > 0 && (
+                        <Box sx={{ width: '100%', mb: 1 }}>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                    {attachedImages.map((img, ix) => (
+                                        <Box key={ix} sx={{ position: 'relative', width: 96, height: 96, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: theme.palette.divider, cursor: 'pointer' }} onClick={() => { setPreviewSrc(img.dataUrl); setPreviewName(img.name || 'image'); setPreviewOpen(true) }}>
+                                            <img src={img.dataUrl} alt={img.name || 'image'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <Box sx={{ position: 'absolute', top: 2, right: 2, display: 'flex', gap: 0.5 }}>
+                                                <IconButton size='small' onClick={(e) => { e.stopPropagation(); onEditImage(ix) }} sx={{ bgcolor: theme.palette.background.paper }}>
+                                                    <ModeEditOutlineOutlinedIcon fontSize='small' />
+                                                </IconButton>
+                                                <IconButton size='small' onClick={(e) => { e.stopPropagation(); onRemoveImage(ix) }} sx={{ bgcolor: theme.palette.background.paper }}>
+                                                    <DeleteOutlineIcon fontSize='small' />
+                                                </IconButton>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                            </Box>
+                        </Box>
+                    )}
+                    <div className={cn('flex items-end', isNarrow ? 'gap-1' : 'gap-2')}>
+                        <MiniButton className={cn(isNarrow ? 'mr-1' : 'mr-2')} style={{ color: theme.palette.text.primary }}
+                            onClick={(e) => openMenu(e.currentTarget)}
                             tooltipTitle={
                                 <div className='text-center inline-block'>
-                                    <span>{t('Customize settings for the current conversation')}</span>
+                                    <span>{t('Attach image or message settings')}</span>
                                 </div>
                             }
                             tooltipPlacement='top'
                         >
-                            <Settings2 size='22' strokeWidth={1} />
+                            <AddPhotoAlternateOutlinedIcon />
                         </MiniButton>
 
+                        <StyledMenu
+                            anchorEl={menuAnchor}
+                            open={Boolean(menuAnchor)}
+                            onClose={closeMenu}
+                            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        >
+                            <MenuItem onClick={() => {
+                                if (!isVisionModelSelected()) {
+                                    toastActions.add(t('The selected model does not support image attachments'))
+                                    return
+                                }
+                                closeMenu(); onAttachImage()
+                            }} disableRipple>
+                                <InsertPhotoIcon sx={{ mr: 1 }} /> {t('Attach Image')}
+                            </MenuItem>
+                            <MenuItem onClick={() => { closeMenu(); setChatConfigDialogSession(sessionActions.getCurrentSession()) }} disableRipple>
+                                <SettingsOutlinedIcon sx={{ mr: 1 }} /> {t('Message Settings')}
+                            </MenuItem>
+                        </StyledMenu>
 
+                        <input ref={fileInputRef} type='file' accept='image/*' multiple style={{ display: 'none' }} onChange={onFileSelected} />
+                        <input ref={replaceInputRef} type='file' accept='image/*' style={{ display: 'none' }} onChange={onReplaceFileSelected} />
                         <TextareaAutosize
                             className={cn(
                                 'flex-1 overflow-y-auto resize-none border-none outline-none',
@@ -241,8 +382,14 @@ export default function InputBox(props: Props) {
                             placeholder={t('Type your question here...') || ''}
                         />
 
+                        <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)}>
+                            <Box sx={{ maxWidth: '90vw', maxHeight: '90vh' }}>
+                                <img src={previewSrc} alt={previewName} style={{ maxWidth: '90vw', maxHeight: '90vh', display: 'block' }} />
+                            </Box>
+                        </Dialog>
+
                         <MiniButton
-                            className='w-8 ml-2 hover:bg-gray-100 dark:hover:bg-gray-800'
+                            className={cn('w-8 hover:bg-gray-100 dark:hover:bg-gray-800', isNarrow ? 'ml-1' : 'ml-2')}
                             style={{
                                 color: isGenerating
                                     ? theme.palette.error.main
@@ -294,6 +441,7 @@ export default function InputBox(props: Props) {
                                         return rest
                                     })
                                     setMessageInput(sessionDrafts[props.currentSessionId] || '')
+                                    setAttachedImages([])
                                 }}
                             >
                                 <CloseRoundedIcon/>

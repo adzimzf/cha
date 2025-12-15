@@ -24,10 +24,22 @@ export default class OpenAIComp extends Base {
         signal?: AbortSignal,
         onResultChange?: onResultChange
     ): Promise<string> {
-        const messages = rawMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-        }))
+        const messages = rawMessages.map((m) => {
+            if (m.attachments && m.attachments.length > 0) {
+                const parts: any[] = []
+                const text = (m.content || '').trim()
+                if (text) {
+                    parts.push({ type: 'text', text })
+                }
+                for (const att of m.attachments) {
+                    if (att.type === 'image') {
+                        parts.push({ type: 'image_url', image_url: { url: att.dataUrl } })
+                    }
+                }
+                return { role: m.role, content: parts }
+            }
+            return { role: m.role, content: m.content }
+        })
 
         const response = await this.post(
             `${this.options.baseURL}/chat/completions`,
