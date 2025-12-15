@@ -28,6 +28,11 @@ export interface Message {
     aiProvider?: string
     model?: string
 
+    estimatedCostUSD?: number
+    promptTokens?: number
+    completionTokens?: number
+    totalTokens?: number
+
     errorCode?: number
     error?: string
     errorExtra?: {
@@ -78,6 +83,10 @@ export function createMessage(role: MessageRole = MessageRoleEnum.User, content:
         role: role,
         timestamp: new Date().getTime(),
         numIndex: 0,
+        estimatedCostUSD: undefined,
+        promptTokens: undefined,
+        completionTokens: undefined,
+        totalTokens: undefined,
     }
 }
 

@@ -48,6 +48,7 @@ export default class ChatboxAI extends Base {
             signal
         )
         let result = ''
+        this.setLastEstimatedCostUSD(undefined)
         await this.handleSSE(response, (message) => {
             if (message === '[DONE]') {
                 return
@@ -55,6 +56,9 @@ export default class ChatboxAI extends Base {
             const data = JSON.parse(message)
             if (data.error) {
                 throw new ApiError(`Error from Chatbox AI: ${JSON.stringify(data)}`)
+            }
+            if (data.usage && typeof data.usage.estimated_cost === 'number') {
+                this.setLastEstimatedCostUSD(data.usage.estimated_cost)
             }
             const word = data.choices[0]?.delta?.content
             if (word !== undefined) {

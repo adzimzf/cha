@@ -75,6 +75,7 @@ export default class OpenAI extends Base {
             signal
         )
         let result = ''
+        this.setLastEstimatedCostUSD(undefined)
         await this.handleSSE(response, (message) => {
             if (message === '[DONE]') {
                 return
@@ -82,6 +83,9 @@ export default class OpenAI extends Base {
             const data = JSON.parse(message)
             if (data.error) {
                 throw new ApiError(`Error from OpenAI: ${JSON.stringify(data)}`)
+            }
+            if (data.usage && typeof data.usage.estimated_cost === 'number') {
+                this.setLastEstimatedCostUSD(data.usage.estimated_cost)
             }
             const text = data.choices[0]?.delta?.content
             if (text !== undefined) {
@@ -105,6 +109,11 @@ export default class OpenAI extends Base {
         const json = await response.json()
         if (json.error) {
             throw new ApiError(`Error from OpenAI: ${JSON.stringify(json)}`)
+        }
+        if (json.usage && typeof json.usage.estimated_cost === 'number') {
+            this.setLastEstimatedCostUSD(json.usage.estimated_cost)
+        } else {
+            this.setLastEstimatedCostUSD(undefined)
         }
         if (onResultChange) {
             onResultChange(json.choices[0].message.content)

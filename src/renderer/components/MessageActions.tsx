@@ -26,6 +26,7 @@ import { countWord } from '@/packages/word-count'
 import { estimateTokensFromMessages } from '@/packages/token'
 import { copyToClipboard } from '@/packages/navigator'
 import * as toastActions from '@/stores/toastActions'
+ 
 import { useTranslation } from 'react-i18next'
 import * as sessionActions from '@/stores/sessionActions'
 import { useSetAtom } from 'jotai'
@@ -251,6 +252,8 @@ export default function MessageActions(props: Props) {
                 </IconButton>
             </Tooltip>
             </ClickAwayListener>
+
+            
         </Stack>
     );
 }
@@ -271,6 +274,10 @@ const KeyValueList = ({ msg }: KeyValueListProps) => {
         {
             key: 'Tokens Used',
             value: msg.tokensUsed ?? 0
+        },
+        {
+            key: 'Est Cost',
+            value: typeof msg.estimatedCostUSD === 'number' ? `$${msg.estimatedCostUSD.toFixed(6)}` : 'Unknown'
         },
     ];
 
