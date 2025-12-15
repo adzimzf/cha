@@ -64,10 +64,10 @@ export function Table(props: any){
     const theme = useTheme()
     return useMemo(() => {
         return (
-            <div style={{ width: '100%' }}>
+            <div style={{ width: '100%', maxWidth: '100%', overflowX: 'auto', display: 'block', boxSizing: 'border-box' }}>
                 <table
                     {...props}
-                    style={{ width: '100%', tableLayout: 'fixed' }}
+                    style={{ width: 'max-content', tableLayout: 'auto' }}
                 />
             </div>
         )
@@ -186,7 +186,7 @@ export function CodeBlock(props: any) {
                     }
                     language={language}
                     PreTag="div"
-                    wrapLongLines
+                    wrapLongLines={false}
                     customStyle={{
                         marginTop: '0',
                         margin: '0',
@@ -195,7 +195,12 @@ export function CodeBlock(props: any) {
                         borderBottomLeftRadius: '0.3rem',
                         borderBottomRightRadius: '0.3rem',
                         border: 'none',
-                        overflowX: 'hidden',
+                        overflowX: 'auto',
+                        whiteSpace: 'pre',
+                        wordBreak: 'normal',
+                        maxWidth: '100%',
+                        display: 'block',
+                        boxSizing: 'border-box',
                     }}
                 />
             </div>

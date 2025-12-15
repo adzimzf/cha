@@ -216,6 +216,7 @@ export default function Message(props: Props) {
                                 container
                                 sx={{
                                     width: '0px',
+                                    minWidth: 0,
                                     paddingRight: '15px',
                                     justifyContent: 'center',
                                 }}
@@ -234,7 +235,8 @@ export default function Message(props: Props) {
                                         sx={{
                                             ...(small ? { fontSize: theme.typography.body2.fontSize } : {}),
                                             textAlign: 'left',
-                                            maxWidth: '860px',
+                                            maxWidth: '100%',
+                                            width: '100%',
                                             alignSelf: 'flex-start',
                                             borderRadius: '14px',
                                             padding: '10px 12px',
@@ -291,6 +293,7 @@ export default function Message(props: Props) {
                                     width: '0px',
                                     paddingRight: '15px',
                                     justifyContent: msg.role === 'user' ? 'flex-end' : 'center',
+                                    minWidth: 0,
                                 }}
                             >
                                 <Grid
@@ -307,7 +310,8 @@ export default function Message(props: Props) {
                                         sx={{
                                             ...(small ? { fontSize: theme.typography.body2.fontSize } : {}),
                                             textAlign: msg.role === 'user' ? 'right' : 'left',
-                                            maxWidth: '860px',
+                                            maxWidth: '100%',
+                                            width: 'fit-content',
                                             alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
                                             borderRadius: '14px',
                                             padding: '10px 12px',
