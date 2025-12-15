@@ -55,18 +55,25 @@ export default function SyncSettings  (props :Props) {
     const [showRestartDialog, setShowRestartDialog] = useState(false);
 
     const handleProviderChange = (event: SelectChangeEvent) => {
-        const provider = event.target.value;
-        setSelectedProvider(provider as SyncProvider);
-        settingsEdit.syncConfig.provider = provider as SyncProvider;
-        const providerConfig = settingsEdit.syncConfig?.providersConfig
+        const provider = event.target.value as SyncProvider;
+        setSelectedProvider(provider);
+        const nextSyncConfig = {
+            ...settingsEdit.syncConfig,
+            provider,
+        };
+        setSettingsEdit({
+            ...settingsEdit,
+            syncConfig: nextSyncConfig,
+        });
+        const providerConfig = nextSyncConfig?.providersConfig;
         if (providerConfig) {
-           switch (provider) {
-               case 'Dropbox':
-                   setIsConnected(providerConfig.Dropbox.authToken?.trim() !== '');
-                   break
-               default:
-                   setIsConnected(false);
-           }
+            switch (provider) {
+                case 'Dropbox':
+                    setIsConnected(providerConfig.Dropbox.authToken?.trim() !== '');
+                    break;
+                default:
+                    setIsConnected(false);
+            }
         }
     };
 
@@ -74,26 +81,32 @@ export default function SyncSettings  (props :Props) {
     const handleDataChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
         if (name === 'all') {
-            setSelectedData({
+            const nextSelected = {
                 all: checked,
                 chat: checked,
                 config: checked,
-            });
-            settingsEdit.syncConfig.syncDataType = checked ? ['all'] : [];
+            };
+            setSelectedData(nextSelected);
+            const nextSyncConfig = {
+                ...settingsEdit.syncConfig,
+                syncDataType: checked ? ['all'] : [],
+            };
+            setSettingsEdit({ ...settingsEdit, syncConfig: nextSyncConfig });
         } else {
             setSelectedData(prev => {
-                // Create the new state first
                 const newState = {
                     ...prev,
                     [name]: checked,
-                    all: Object.values({ ...prev, [name]: checked }).every(Boolean)
+                    all: Object.values({ ...prev, [name]: checked }).every(Boolean),
                 };
-
-                // Calculate syncDataType based on the NEW state
-                settingsEdit.syncConfig.syncDataType = Object.entries(newState)
-                    .filter(([key, value]) => value && key !== 'all') // Exclude 'all' and unchecked items
+                const nextSyncDataType = Object.entries(newState)
+                    .filter(([key, value]) => value && key !== 'all')
                     .map(([key]) => key);
-
+                const nextSyncConfig = {
+                    ...settingsEdit.syncConfig,
+                    syncDataType: nextSyncDataType as any,
+                };
+                setSettingsEdit({ ...settingsEdit, syncConfig: nextSyncConfig });
                 return newState;
             });
         }
@@ -113,8 +126,10 @@ export default function SyncSettings  (props :Props) {
     const [syncEnabled, setSyncEnabled] = useState(settingsEdit.syncConfig?.enabled ?? false);
 
     const handleSyncEnabledChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSyncEnabled(event.target.checked);
-        settingsEdit.syncConfig.enabled = event.target.checked;
+        const enabled = event.target.checked;
+        setSyncEnabled(enabled);
+        const nextSyncConfig = { ...settingsEdit.syncConfig, enabled };
+        setSettingsEdit({ ...settingsEdit, syncConfig: nextSyncConfig });
     };
 
     return (
@@ -189,9 +204,11 @@ export default function SyncSettings  (props :Props) {
                         <Select
                             value={syncInterval}
                             onChange={(e: any) => {
-                                setSyncInterval(e.target.value)
-                                settingsEdit.syncConfig.frequency = e.target.value as number
-                                setShowRestartDialog(true)
+                                const freq = e.target.value as number;
+                                setSyncInterval(freq);
+                                const nextSyncConfig = { ...settingsEdit.syncConfig, frequency: freq };
+                                setSettingsEdit({ ...settingsEdit, syncConfig: nextSyncConfig });
+                                setShowRestartDialog(true);
                             }}
                         >
                             <MenuItem key={'disabled'} value={0}>
@@ -213,8 +230,10 @@ export default function SyncSettings  (props :Props) {
                             <Switch
                                 checked={syncOnLaunch}
                                 onChange={(e) => {
-                                    setSyncOnLaunch(e.target.checked)
-                                    settingsEdit.syncConfig.onAppLaunch = e.target.checked
+                                    const onLaunch = e.target.checked;
+                                    setSyncOnLaunch(onLaunch);
+                                    const nextSyncConfig = { ...settingsEdit.syncConfig, onAppLaunch: onLaunch };
+                                    setSettingsEdit({ ...settingsEdit, syncConfig: nextSyncConfig });
                                 }}
                                 color="primary"
                             />

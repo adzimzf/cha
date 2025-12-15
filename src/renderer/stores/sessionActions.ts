@@ -554,6 +554,7 @@ export function initEmptyChatSession(): Session {
         type: 'chat',
         updateTime: Date.now(),
         modelProviderID: settings.modelProviderID,
+        model: settings.modelProviderList.find(m => m.uuid == settings.modelProviderID)?.selectedModel || '',
         messages: [
             {
                 id: uuidv4(),

@@ -84,7 +84,10 @@ export default function ModelSettingTab(props: ModelConfigProps) {
                 settings={settingsEdit}
                 setSettings={setSettingsEdit}
                 onSave={(settings)=>{
-                    settingsEdit.modelProviderList = upsertProvider(settingsEdit.modelProviderList,settings)
+                    setSettingsEdit({
+                        ...settingsEdit,
+                        modelProviderList: upsertProvider(settingsEdit.modelProviderList, settings),
+                    })
                 }}
             />
 

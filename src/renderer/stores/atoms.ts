@@ -142,6 +142,7 @@ export const showScrollToBottom = atom<boolean>(false)
 export const synchronizeShowLoading = atom<boolean>(false)
 export const synchronizeErrorMessage = atom<string>('')
 export const atBottomAtom = atom<boolean>(false)
+export const bottomOverlayHeightAtom = atom<number>(0)
 
 // editing state
 export const editingMessageAtom = atom<{

@@ -12,7 +12,6 @@ import { useAtom } from 'jotai/index'
 import { settingsAtom } from './stores/atoms'
 import { Settings } from '../shared/types'
 import { useSwipeable } from 'react-swipeable'
-import * as scrollActions from '@/stores/scrollActions'
 
 interface Props {
     toggleSidebar: (newOpen: boolean) => void
@@ -30,7 +29,7 @@ export default function MainPane(props: Props) {
     const showScrollToBottom = useAtomValue(atoms.showScrollToBottom)
     const atBottom = useAtomValue(atoms.atBottomAtom)
     const bottomOverlayRef = React.useRef<HTMLDivElement>(null)
-    const [bottomOverlayHeight, setBottomOverlayHeight] = useState(0)
+    const [, setBottomOverlayHeightAtom] = useAtom(atoms.bottomOverlayHeightAtom)
     const scrollPositionCache = new WeakMap<HTMLElement, number>()
     function isElementOrParentsScrollable(element: HTMLElement | null): boolean {
         if (!element) return false
@@ -77,17 +76,12 @@ export default function MainPane(props: Props) {
     useEffect(() => {
         const el = bottomOverlayRef.current
         if (!el) return
-        const update = () => setBottomOverlayHeight(el.offsetHeight)
+        const update = () => setBottomOverlayHeightAtom(el.offsetHeight)
         update()
         const ro = new ResizeObserver(update)
         ro.observe(el)
         return () => ro.disconnect()
     }, [bottomOverlayRef])
-    useEffect(() => {
-        if (atBottom) {
-            scrollActions.scrollToBottom('auto')
-        }
-    }, [atBottom, bottomOverlayHeight])
     return (
         <Box
             className="h-full w-full"
@@ -107,14 +101,7 @@ export default function MainPane(props: Props) {
                     onClose={() => setOpenModelSelect(false)}
                 />
                 <div className="flex-1 min-h-0" {...swipeHandlers}>
-                    <div
-                        className="h-full overflow-y-auto"
-                        style={{
-                            paddingBottom: atBottom ? bottomOverlayHeight : 0
-                        }}
-                    >
-                        <MessageList />
-                    </div>
+                    <MessageList />
                 </div>
                 <div
                     style={{
