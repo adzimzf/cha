@@ -14,7 +14,7 @@ function Toasts() {
                     key={toast.id}
                     open
                     onClose={() => toastActions.remove(toast.id)}
-                    message={toast.content}
+                    message={<span style={{ whiteSpace: 'pre-line' }}>{toast.content}</span>}
                     anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                 />
             ))}

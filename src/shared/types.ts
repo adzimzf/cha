@@ -16,6 +16,7 @@ export interface Message {
 
     role: MessageRole
     content: string
+    attachments?: Attachment[]
     name?: string
 
     numIndex: number
@@ -26,6 +27,11 @@ export interface Message {
 
     aiProvider?: string
     model?: string
+
+    estimatedCostUSD?: number
+    promptTokens?: number
+    completionTokens?: number
+    totalTokens?: number
 
     errorCode?: number
     error?: string
@@ -40,6 +46,13 @@ export interface Message {
 
     // thinking duration in Ms
     thinkingDuration?: number
+}
+
+export interface Attachment {
+    type: 'image'
+    mime: string
+    dataUrl: string
+    name?: string
 }
 
 export type SettingWindowTab = 'ai' | 'display' | 'chat' | 'advanced'
@@ -70,6 +83,10 @@ export function createMessage(role: MessageRole = MessageRoleEnum.User, content:
         role: role,
         timestamp: new Date().getTime(),
         numIndex: 0,
+        estimatedCostUSD: undefined,
+        promptTokens: undefined,
+        completionTokens: undefined,
+        totalTokens: undefined,
     }
 }
 
@@ -101,6 +118,7 @@ export interface OpenAICompProviderSettings {
     temperature: number
     topP: number
     openaiMaxContextMessageCount: number
+    imageCapableModelIDs?: string[]
 }
 
 export interface ModelSettings {

@@ -102,6 +102,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             temperature: DefaultTemperature,
             topP: DefaultTopP,
             icon: 'https://images.seeklogo.com/logo-png/51/2/anthropic-icon-logo-png_seeklogo-515014.png',
+            imageCapableModelIDs: [],
         },
         {
             uuid: 'provider-deepseek',
@@ -110,6 +111,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             temperature: DefaultTemperature,
             topP: DefaultTopP,
             icon: 'https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/deepseek-color.png',
+            imageCapableModelIDs: [],
         },
         {
             uuid: 'provider-deepinfra',
@@ -118,6 +120,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             temperature: DefaultTemperature,
             topP: DefaultTopP,
             icon:'https://deepinfra.com/deepinfra-logo-512.webp',
+            imageCapableModelIDs: [],
         },
         {
             uuid: 'provider-gemini',
@@ -126,6 +129,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             temperature: DefaultTemperature,
             topP: DefaultTopP,
             icon:'https://lh3.googleusercontent.com/Xtt-WZqHiV8OjACMMMr6wMdoMGE7bABi-HYujupzevufo1kiHUFQZukI1JILhjItrPNrDWLq6pfd=s600-w600',
+            imageCapableModelIDs: [],
         },
         {
             uuid: 'provider-grok',
@@ -134,6 +138,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             temperature: DefaultTemperature,
             topP: DefaultTopP,
             icon: 'https://play-lh.googleusercontent.com/dQRKhi30KpzG3gww3TdVLzyIAVuOAWylnAcgnEUxqfpm2A8dEt2sgApVvtKAy-DO8aI',
+            imageCapableModelIDs: [],
         },
         {
             uuid: 'provider-openai',
@@ -142,6 +147,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             temperature: DefaultTemperature,
             topP: DefaultTopP,
             icon:'https://static.vecteezy.com/system/resources/previews/024/558/811/non_2x/openai-chatgpt-logo-icon-free-png.png'
+            ,imageCapableModelIDs: [],
         },
         {
             uuid: 'provider-perplexity',
@@ -150,6 +156,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             temperature: DefaultTemperature,
             topP: DefaultTopP,
             icon:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdFSv1lxsEwowysGSVpPBM_VMwocDGqxqRyg&s',
+            imageCapableModelIDs: [],
         },
         {
             uuid: 'provider-siliconflow',
@@ -158,6 +165,7 @@ export function getDefaultModelProviders(): OpenAICompProviderSettings[] {
             temperature: DefaultTemperature,
             topP: DefaultTopP,
             icon:'https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/siliconcloud-color.png',
+            imageCapableModelIDs: [],
         },
     ] as OpenAICompProviderSettings[]
 }

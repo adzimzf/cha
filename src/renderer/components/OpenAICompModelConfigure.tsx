@@ -1,14 +1,14 @@
 import {
     Alert,
     Box,
-    FormControl,
+    FormHelperText,
     IconButton,
-    InputLabel,
     MenuItem,
     Modal,
     Select,
     TextField, Tooltip,
 } from '@mui/material'
+import Autocomplete from '@mui/material/Autocomplete'
 import PasswordTextField from '@/components/PasswordTextField'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import React, { useEffect, useState } from 'react'
@@ -161,29 +161,39 @@ export function OpenAICompModelConfigure(props: OpenAICompModelConfigureProps) {
                 </Tooltip>
             </div>
 
-            <FormControl fullWidth style={{ marginTop: 8 }}>
-                <InputLabel>{t('Model List')}</InputLabel>
-                <Select
-                    label={t('Model List')}
-                    value={provider.selectedModel || defaultModelName}
-                    onChange={(e) => {
+            <Autocomplete
+                disabled={!provider.modelList?.length}
+                options={[...(provider.modelList?.map((m) => m.id) || []), 'custom-model']}
+                value={provider.selectedModel || defaultModelName || ''}
+                onChange={(e, newValue) => {
+                    updateModelProvider({
+                        ...provider,
+                        selectedModel: (newValue as string) || ''
+                    })
+                }}
+                renderInput={(params) => (
+                    <TextField {...params} label={t('Model List')} placeholder={t('Search model') || ''} />
+                )}
+                sx={{ mt: 1 }}
+            />
+
+            <Box sx={{ mt: 1.5 }}>
+                <Autocomplete
+                    multiple
+                    options={provider.modelList?.map((m) => m.id) || []}
+                    value={provider.imageCapableModelIDs || []}
+                    onChange={(e, newValue) => {
                         updateModelProvider({
                             ...provider,
-                            selectedModel: e.target.value
+                            imageCapableModelIDs: (newValue as string[]) || []
                         })
                     }}
-                    disabled={!provider.modelList?.length}
-                >
-                    {provider.modelList?.map((model) => (
-                        <MenuItem key={model.id} value={model.id}>
-                            {model.id}
-                        </MenuItem>
-                    ))}
-                    <MenuItem value="custom-model">
-                        {t('Custom Model')}
-                    </MenuItem>
-                </Select>
-            </FormControl>
+                    renderInput={(params) => (
+                        <TextField {...params} label={t('Image-capable Models')} placeholder={t('Search models') || ''} />
+                    )}
+                />
+                <FormHelperText>{t('Select models that support image (vision) inputs')}</FormHelperText>
+            </Box>
 
             <TemperatureSlider value={provider.temperature} onChange={(e) => {
                 updateModelProvider({

@@ -5,6 +5,7 @@ import _ from 'lodash'
 
 export default class Base {
     public name = 'Unknown'
+    protected lastEstimatedCostUSD: number | undefined
 
     constructor() {
     }
@@ -47,6 +48,14 @@ export default class Base {
 
     async preprocessMessage(messages: Message[]): Promise<Message[]> {
         return messages
+    }
+
+    getLastEstimatedCostUSD(): number | undefined {
+        return this.lastEstimatedCostUSD
+    }
+
+    protected setLastEstimatedCostUSD(value?: number) {
+        this.lastEstimatedCostUSD = value
     }
 
     async handleSSE(response: Response, onMessage: (message: string) => void) {

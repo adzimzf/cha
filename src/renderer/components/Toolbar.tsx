@@ -7,6 +7,9 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import StyledMenu from './StyledMenu'
 import { useState } from 'react'
 import { MenuItem, Divider } from '@mui/material'
+import { AttachMoney } from '@mui/icons-material'
+import * as toastActions from '@/stores/toastActions'
+import { Message } from 'src/shared/types'
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import ZoomOutIcon from '@mui/icons-material/ZoomOut'
@@ -47,6 +50,63 @@ export default function Toolbar() {
         handleMoreMenuClose()
     }
 
+    const sumEstimatedCost = (msgs: Message[]): number => {
+        let total = 0
+        for (const m of msgs) {
+            if (typeof m.estimatedCostUSD === 'number') {
+                total += m.estimatedCostUSD
+            }
+            if (Array.isArray(m.branches) && m.branches.length > 0) {
+                for (const branch of m.branches) {
+                    total += sumEstimatedCost(branch)
+                }
+            }
+        }
+        return total
+    }
+
+    const sumTokens = (msgs: Message[]) => {
+        let total = 0
+        let input = 0
+        let output = 0
+        for (const m of msgs) {
+            if (typeof m.totalTokens === 'number') {
+                total += m.totalTokens
+            } else if (typeof m.tokensUsed === 'number') {
+                total += m.tokensUsed
+            }
+            if (typeof m.promptTokens === 'number') {
+                input += m.promptTokens
+            }
+            if (typeof m.completionTokens === 'number') {
+                output += m.completionTokens
+            }
+            if (Array.isArray(m.branches) && m.branches.length > 0) {
+                for (const branch of m.branches) {
+                    const sub = sumTokens(branch)
+                    total += sub.total
+                    input += sub.input
+                    output += sub.output
+                }
+            }
+        }
+        return { total, input, output }
+    }
+
+    const handleShowEstimatedTotal = () => {
+        const session = currentSession
+        if (!session) {
+            handleMoreMenuClose()
+            return
+        }
+        const costTotal = sumEstimatedCost(session.messages)
+        const formattedCost = `$${costTotal.toFixed(6)} USD`
+        const { total, input, output } = sumTokens(session.messages)
+        const msg = `Cost: ${formattedCost}\nTokens:\n- total: ${total}\n- input: ${input}\n- output: ${output}`
+        toastActions.add(msg)
+        handleMoreMenuClose()
+    }
+
     return (
         <Box>
             <IconButton
@@ -76,6 +136,10 @@ export default function Toolbar() {
                     {t('Reset Zoom')}
                 </MenuItem>
                 <Divider />
+                <MenuItem onClick={handleShowEstimatedTotal} disableRipple>
+                    <AttachMoney fontSize="small" />
+                    Cost
+                </MenuItem>
                 <MenuItem onClick={handleSessionClean} disableRipple
                     sx={{
                         '&:hover': {

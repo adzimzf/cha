@@ -423,6 +423,10 @@ export async function generate(sessionId: string, targetMsg: Message, promptMsgs
                     generating: false,
                     cancel: undefined,
                     tokensUsed: estimateTokensFromMessages([...promptMsgs, targetMsg]),
+                    promptTokens: estimateTokensFromMessages([...promptMsgs]),
+                    completionTokens: estimateTokensFromMessages([targetMsg]),
+                    totalTokens: (estimateTokensFromMessages([...promptMsgs]) + estimateTokensFromMessages([targetMsg])),
+                    estimatedCostUSD: model.getLastEstimatedCostUSD(),
                 }
                 targetMsg.content = (targetMsg.content || '').replaceAll('<｜end▁of▁sentence｜>', '')
                 modifyMessage(sessionId, targetMsg, true)

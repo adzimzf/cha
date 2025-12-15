@@ -24,10 +24,22 @@ export default class OpenAIComp extends Base {
         signal?: AbortSignal,
         onResultChange?: onResultChange
     ): Promise<string> {
-        const messages = rawMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-        }))
+        const messages = rawMessages.map((m) => {
+            if (m.attachments && m.attachments.length > 0) {
+                const parts: any[] = []
+                const text = (m.content || '').trim()
+                if (text) {
+                    parts.push({ type: 'text', text })
+                }
+                for (const att of m.attachments) {
+                    if (att.type === 'image') {
+                        parts.push({ type: 'image_url', image_url: { url: att.dataUrl } })
+                    }
+                }
+                return { role: m.role, content: parts }
+            }
+            return { role: m.role, content: m.content }
+        })
 
         const response = await this.post(
             `${this.options.baseURL}/chat/completions`,
@@ -44,6 +56,7 @@ export default class OpenAIComp extends Base {
 
         let result = ''
         let reasoning = false
+        this.setLastEstimatedCostUSD(undefined)
         await this.handleSSE(response, (message) => {
             if (message === '[DONE]') {
                 return
@@ -51,6 +64,9 @@ export default class OpenAIComp extends Base {
             const data = JSON.parse(message)
             if (data.error) {
                 throw new ApiError(`Error from PPIO: ${JSON.stringify(data)}`)
+            }
+            if (data.usage && typeof data.usage.estimated_cost === 'number') {
+                this.setLastEstimatedCostUSD(data.usage.estimated_cost)
             }
             let text = data.choices[0]?.delta?.content
             const reasoningContent = data.choices[0]?.delta?.reasoning_content
